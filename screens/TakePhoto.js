@@ -33,15 +33,15 @@ const TakePhoto = () => {
                     //value is photo base64 string
                     const createdDate = new Date(parseInt(key))
 
-                    if (createdDate.getUTCFullYear() !== now.getUTCFullYear()) {
+                    if (createdDate.getFullYear() !== now.getFullYear()) {
                         return false
                     }
 
-                    if (createdDate.getUTCMonth() !== now.getUTCMonth()) {
+                    if (createdDate.getMonth() !== now.getMonth()) {
                         return false
                     }
 
-                    if (createdDate.getUTCDate() !== now.getUTCDate()) {
+                    if (createdDate.getDate() !== now.getDate()) {
                         return false
                     }
 
