@@ -1,4 +1,8 @@
 {
   "name": "APicADay",
-  "displayName": "APicADay"
+  "displayName": "APicADay",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-6980968247752885~7991699069",
+    "ios_app_id": "ca-app-pub-6980968247752885~5536888127"
+  }
 }

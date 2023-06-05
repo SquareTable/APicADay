@@ -11,14 +11,14 @@ class Photo extends Component {
         this.image = 'data:image/jpeg;base64,' + this.props.item[1]
     }
 
-    shouldComponentUpdate() {
-        return false
+    shouldComponentUpdate(nextProps, nextState) {
+        return nextProps.colors !== this.props.colors
     }
 
     render() {
         return (
             <View style={{justifyContent: 'center', alignItems: 'center', margin: 3, width: '50%'}}>
-                <Text style={{fontSize: 24, fontWeight: 'bold'}}>{this.date.getDate()}/{this.date.getMonth() + 1}/{this.date.getFullYear()}</Text>
+                <Text style={{fontSize: 24, fontWeight: 'bold', color: this.props.colors.text}}>{this.date.getDate()}/{this.date.getMonth() + 1}/{this.date.getFullYear()}</Text>
                 <ImageModal
                     resizeMode="contain"
                     style={{
@@ -29,8 +29,8 @@ class Photo extends Component {
                         uri: this.image,
                     }}
                 />
-                <TouchableOpacity onPress={() => this.props.deleteImage(this.props.item[0])} style={{borderColor: 'black', borderWidth: 3, borderRadius: 50, padding: 10, aspectRatio: 1, justifyContent: 'center', alignItems: 'center', marginTop: 10}}>
-                    <FontAwesomeFive color="black" size={24} name="trash"/>
+                <TouchableOpacity onPress={() => this.props.deleteImage(this.props.item[0])} style={{borderColor: this.props.colors.text, borderWidth: 3, borderRadius: 50, padding: 10, aspectRatio: 1, justifyContent: 'center', alignItems: 'center', marginTop: 10}}>
+                    <FontAwesomeFive color={this.props.colors.text} size={24} name="trash"/>
                 </TouchableOpacity>
             </View>
         )

@@ -33,6 +33,12 @@ static void ClearKeychainIfNecessary() {
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  //We store the app password in the iOS Keychain.
+  //By default the Keychain values do not get removed when the app gets deleted
+  //When the user deletes the app, we want the password to get deleted as well
+  //so then if the app is reinstalled, it is not locked, and they can use the app.
+  //This only clears the Keychain values created by this app
+  
   ClearKeychainIfNecessary();
   self.moduleName = @"APicADay";
   // You can add your custom initial props in the dictionary below.
