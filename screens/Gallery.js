@@ -24,6 +24,7 @@ const Gallery = () => {
     const [unlockingError, setUnlockingError] = useState(null)
     const { colors } = useTheme();
     const [streak, setStreak] = useState(0)
+    const [streakWarning, setStreakWarning] = useState(false)
 
     async function getPhotos() {
         const keys = await AsyncStorage.getAllKeys()
@@ -48,8 +49,9 @@ const Gallery = () => {
             data.splice(postsPerAd + (postsPerAd + 2) * i, 0, {ad: true, key: `AD-${i}`}, {ad: 'placeholder', key: `AD-PLACEHOLDER-${i}`})
         }
 
-        const streak = calculateStreak(data)
+        const [streak, streakWarning] = calculateStreak(data)
         setStreak(streak)
+        setStreakWarning(streakWarning)
         setPhotos(data)
     }
 
@@ -170,12 +172,16 @@ const Gallery = () => {
         let dateToCheckAgainst = new Date();
         const msInDay = 24 * 60 * 60 * 1000;
         let streakCount = 0;
+        let streakWarning = false;
+        let photosIterated = 0;
 
         const currentDate = dateToCheckAgainst.getDate();
         const currentMonth = dateToCheckAgainst.getMonth();
         const currentYear = dateToCheckAgainst.getFullYear();
 
         for (const [photoDateMS] of sortedPhotos) {
+            photosIterated++;
+
             const photoDate = new Date(parseInt(photoDateMS));
             const photoYearTaken = photoDate.getFullYear();
             const photoMonthTaken = photoDate.getMonth();
@@ -192,6 +198,11 @@ const Gallery = () => {
             const dateToCheckAgainstMonth = dateToCheckAgainst.getMonth();
             const dateToCheckAgainstYear = dateToCheckAgainst.getFullYear();
 
+            if (photosIterated === 1 && dateToCheckAgainstDate === photoDateTaken && dateToCheckAgainstMonth === photoMonthTaken && dateToCheckAgainstYear === photoYearTaken) {
+                //If the most recent photo was taken yesterday
+                streakWarning = true;
+            }
+
             if (photoYearTaken === dateToCheckAgainstYear && dateToCheckAgainstMonth === photoMonthTaken && dateToCheckAgainstDate === photoDateTaken) {
                 streakCount++;
                 continue;
@@ -200,7 +211,7 @@ const Gallery = () => {
             break
         }
 
-        return streakCount
+        return [streakCount, streakWarning]
     }
 
     return (
@@ -271,8 +282,9 @@ const Gallery = () => {
                                 numColumns={2}
                                 ListHeaderComponent={
                                     <>
-                                        <View style={{width: '100%', height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                                        <View style={{width: '100%', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
                                             <Text style={{color: colors.text}}>🔥 Your streak is: {streak}</Text>
+                                            {streakWarning && <Text style={{color: 'red'}}>Take a photo today to avoid losing your streak</Text>}
                                         </View>
                                     </>
                                 }
