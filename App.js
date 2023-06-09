@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import DeviceInfo from 'react-native-device-info'
 const appConfig = require('./config.json');
 import { AdIdContext } from './context/AdIdContext';
+import { StatusBar } from 'react-native';
 
 const App = () => {
     const colorScheme = useColorScheme()
@@ -43,6 +44,10 @@ const App = () => {
     return (
         <AdIdContext.Provider value={{adId, setAdId}}>
             <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <StatusBar
+                    animated={true}
+                    barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+                />
                 <Tabs/>
             </NavigationContainer>
         </AdIdContext.Provider>

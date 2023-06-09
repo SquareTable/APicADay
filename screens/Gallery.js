@@ -229,6 +229,11 @@ const Gallery = () => {
                                 keyExtractor={(item) => item.key || item[0]}
                                 renderItem={({item}) => item.ad === true ? <Ad/> : item.ad === 'placeholder' ? null : <Photo item={item} deleteImage={deleteImage} colors={colors}/>}
                                 numColumns={2}
+                                ListHeaderComponent={
+                                    <>
+                                        
+                                    </>
+                                }
                             />
                         </SafeAreaView>
                     :
