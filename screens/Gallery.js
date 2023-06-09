@@ -23,6 +23,7 @@ const Gallery = () => {
     const [passwordText, setPasswordText] = useState('')
     const [unlockingError, setUnlockingError] = useState(null)
     const { colors } = useTheme();
+    const [streak, setStreak] = useState(0)
 
     async function getPhotos() {
         const keys = await AsyncStorage.getAllKeys()
@@ -47,6 +48,8 @@ const Gallery = () => {
             data.splice(postsPerAd + (postsPerAd + 2) * i, 0, {ad: true, key: `AD-${i}`}, {ad: 'placeholder', key: `AD-PLACEHOLDER-${i}`})
         }
 
+        const streak = calculateStreak(data)
+        setStreak(streak)
         setPhotos(data)
     }
 
@@ -163,6 +166,43 @@ const Gallery = () => {
         }
     }
 
+    const calculateStreak = (sortedPhotos) => {
+        let dateToCheckAgainst = new Date();
+        const msInDay = 24 * 60 * 60 * 1000;
+        let streakCount = 0;
+
+        const currentDate = dateToCheckAgainst.getDate();
+        const currentMonth = dateToCheckAgainst.getMonth();
+        const currentYear = dateToCheckAgainst.getFullYear();
+
+        for (const [photoDateMS] of sortedPhotos) {
+            const photoDate = new Date(parseInt(photoDateMS));
+            const photoYearTaken = photoDate.getFullYear();
+            const photoMonthTaken = photoDate.getMonth();
+            const photoDateTaken = photoDate.getDate();
+
+            if (photoDateTaken === currentDate && photoMonthTaken === currentMonth && photoYearTaken === currentYear) {
+                streakCount++;
+                continue;
+            }
+
+            dateToCheckAgainst = new Date(dateToCheckAgainst.getTime() - msInDay)
+
+            const dateToCheckAgainstDate = dateToCheckAgainst.getDate();
+            const dateToCheckAgainstMonth = dateToCheckAgainst.getMonth();
+            const dateToCheckAgainstYear = dateToCheckAgainst.getFullYear();
+
+            if (photoYearTaken === dateToCheckAgainstYear && dateToCheckAgainstMonth === photoMonthTaken && dateToCheckAgainstDate === photoDateTaken) {
+                streakCount++;
+                continue;
+            }
+
+            break
+        }
+
+        return streakCount
+    }
+
     return (
         <>
             {
@@ -231,7 +271,9 @@ const Gallery = () => {
                                 numColumns={2}
                                 ListHeaderComponent={
                                     <>
-                                        
+                                        <View style={{width: '100%', height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                                            <Text style={{color: colors.text}}>🔥 Your streak is: {streak}</Text>
+                                        </View>
                                     </>
                                 }
                             />
