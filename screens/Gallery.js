@@ -25,6 +25,7 @@ const Gallery = () => {
     const { colors } = useTheme();
     const [streak, setStreak] = useState(0)
     const [streakWarning, setStreakWarning] = useState(false)
+    const [photoTakenToday, setPhotoTakenToday] = useState(false)
 
     async function getPhotos() {
         const keys = await AsyncStorage.getAllKeys()
@@ -49,9 +50,10 @@ const Gallery = () => {
             data.splice(postsPerAd + (postsPerAd + 2) * i, 0, {ad: true, key: `AD-${i}`}, {ad: 'placeholder', key: `AD-PLACEHOLDER-${i}`})
         }
 
-        const [streak, streakWarning] = calculateStreak(data)
+        const [streak, streakWarning, photoTakenToday] = calculateStreak(data)
         setStreak(streak)
         setStreakWarning(streakWarning)
+        setPhotoTakenToday(photoTakenToday)
         setPhotos(data)
     }
 
@@ -174,6 +176,7 @@ const Gallery = () => {
         let streakCount = 0;
         let streakWarning = false;
         let photosIterated = 0;
+        let photoTakenToday = false;
 
         const currentDate = dateToCheckAgainst.getDate();
         const currentMonth = dateToCheckAgainst.getMonth();
@@ -189,6 +192,7 @@ const Gallery = () => {
 
             if (photoDateTaken === currentDate && photoMonthTaken === currentMonth && photoYearTaken === currentYear) {
                 streakCount++;
+                photoTakenToday = true;
                 continue;
             }
 
@@ -211,7 +215,7 @@ const Gallery = () => {
             break
         }
 
-        return [streakCount, streakWarning]
+        return [streakCount, streakWarning, photoTakenToday]
     }
 
     return (
@@ -284,7 +288,13 @@ const Gallery = () => {
                                     <>
                                         <View style={{width: '100%', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
                                             <Text style={{color: colors.text}}>🔥 Your streak is: {streak}</Text>
-                                            {streakWarning && <Text style={{color: 'red'}}>Take a photo today to avoid losing your streak</Text>}
+                                            {streakWarning ? 
+                                                <Text style={{color: 'red'}}>Take a photo today to avoid losing your streak</Text>
+                                            : photoTakenToday ?
+                                                <Text style={{color: colors.text}}>You've added to your streak for today</Text>
+                                            :
+                                                <Text style={{color: colors.text}}>Take a photo everyday to build up your streak!</Text>
+                                            }
                                         </View>
                                     </>
                                 }
