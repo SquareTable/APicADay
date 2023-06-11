@@ -264,19 +264,19 @@ const Gallery = () => {
                                 <View>
                                     {passwordIsSet ?
                                         <TouchableOpacity onPress={removePassword}>
-                                            <Text style={{fontSize: 14, color: 'blue', textDecorationStyle: 'solid', textDecorationColor: 'blue'}}>Remove Password</Text>
+                                            <Text style={{fontSize: 14, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Remove Password</Text>
                                         </TouchableOpacity>
                                     :
                                         <TouchableOpacity onPress={() => setCreatingPassword(true)}>
-                                            <Text style={{fontSize: 14, color: 'blue', textDecorationStyle: 'solid', textDecorationColor: 'blue', marginRight: 10}}>Turn on password</Text>
+                                            <Text style={{fontSize: 14, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginRight: 10}}>Turn on password</Text>
                                         </TouchableOpacity>
                                     }
                                 </View>
                             </View>
                             {passwordIsSet && (
-                                <TouchableOpacity onPress={lockGallery} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-                                    <Fontisto name="locked" size={20} color="blue"/>
-                                    <Text style={{fontSize: 16, color: 'blue', textDecorationStyle: 'solid', textDecorationColor: 'blue', marginLeft: 10}}>Lock Gallery</Text>
+                                <TouchableOpacity onPress={lockGallery} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10}}>
+                                    <Fontisto name="locked" size={20} color={colors.link}/>
+                                    <Text style={{fontSize: 16, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginLeft: 10}}>Lock Gallery</Text>
                                 </TouchableOpacity>
                             )}
                             <FlatList
@@ -311,18 +311,18 @@ const Gallery = () => {
                                 {passwordIsSet ?
                                     <>
                                         <TouchableOpacity onPress={lockGallery}>
-                                            <Text style={{fontSize: 20, color: 'blue', textDecorationStyle: 'solid', textDecorationColor: 'blue'}}>Lock Gallery</Text>
+                                            <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Lock Gallery</Text>
                                         </TouchableOpacity>
                                     </>
                                 :
                                     <TouchableOpacity onPress={() => setCreatingPassword(true)}>
-                                        <Text style={{fontSize: 20, color: 'blue', textDecorationStyle: 'solid', textDecorationColor: 'blue'}}>Turn on password</Text>
+                                        <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Turn on password</Text>
                                     </TouchableOpacity>
                                 }
                             </View>
                             {passwordIsSet && (
                                 <TouchableOpacity onPress={removePassword}>
-                                    <Text style={{fontSize: 20, color: 'blue', textDecorationStyle: 'solid', textDecorationColor: 'blue', marginTop: 25}}>Remove Password</Text>
+                                    <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginTop: 25}}>Remove Password</Text>
                                 </TouchableOpacity>
                             )}
                         </View>

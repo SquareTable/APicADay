@@ -8,6 +8,22 @@ const appConfig = require('./config.json');
 import { AdIdContext } from './context/AdIdContext';
 import { StatusBar } from 'react-native';
 
+const EditedDefaultTheme = {
+    ...DefaultTheme,
+    colors: {
+        ...DefaultTheme.colors,
+        link: 'blue'
+    }
+}
+
+const EditedDarkTheme = {
+    ...DarkTheme,
+    colors: {
+        ...DarkTheme.colors,
+        link: 'lightblue'
+    }
+}
+
 const App = () => {
     const colorScheme = useColorScheme()
     const productionAdId = Platform.OS === 'ios' ? appConfig.ios_ad_id : appConfig.android_ad_id
@@ -43,7 +59,7 @@ const App = () => {
 
     return (
         <AdIdContext.Provider value={{adId, setAdId}}>
-            <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <NavigationContainer theme={colorScheme === 'dark' ? EditedDarkTheme : EditedDefaultTheme}>
                 <StatusBar
                     animated={true}
                     barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
