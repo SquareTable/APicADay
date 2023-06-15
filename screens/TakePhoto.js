@@ -28,16 +28,14 @@ const TakePhoto = () => {
             const status = await Camera.getCameraPermissionStatus()
             if (status === 'authorized') {
                 const keys = await AsyncStorage.getAllKeys()
-                const data = await AsyncStorage.multiGet(keys)
 
                 const now = new Date()
 
-                console.log('Data:', data)
+                const index = keys.findIndex(key => {
+                    //key is "IMAGE-" + createdAt
+                    if (key.slice(0, 6) !== 'IMAGE-') return false
 
-                const index = data.findIndex(([key, value]) => {
-                    //key is createdAt
-                    //value is photo base64 string
-                    const createdDate = new Date(parseInt(key))
+                    const createdDate = new Date(parseInt(key.substring(6)))
 
                     if (createdDate.getFullYear() !== now.getFullYear()) {
                         return false
@@ -73,15 +71,28 @@ const TakePhoto = () => {
             flash: 'off'
         })
 
-        console.log('Photo:', photo)
-
-        console.log(await RNFS.readFile(photo.path, 'base64'))
-
         const nowMs = Date.now()
-        AsyncStorage.setItem(String(nowMs), await RNFS.readFile(photo.path, 'base64')).then(() => {
+        const base64 = await RNFS.readFile(photo.path, 'base64');
+        AsyncStorage.setItem(('IMAGE-' + nowMs), JSON.stringify({base64Image: base64})).then(() => {
             RNFS.unlink(photo.path)
             .then(() => {
                 console.log('File deleted');
+                setTakenPhotoToday(true)
+                AsyncStorage.getItem('current-streak').then(streak => {
+                    let streakNumber = parseInt(streak);
+                    Promise.all([
+                        AsyncStorage.setItem('current-streak', isNaN(streakNumber) ? '1' : String(++streakNumber)),
+                        AsyncStorage.setItem('previous-streak-date-ms', String(Date.now()))
+                    ]).then(() => {
+                        console.log('Streak successfully incremented')
+                    }).catch(error => {
+                        console.error(error)
+                        alert('An error occurred while incrementing streak')
+                    })
+                }).catch(error => {
+                    console.error(error)
+                    alert('An error occurred while getting current streak')
+                })
                 setTakenPhotoToday(true)
             })
             .catch((err) => {

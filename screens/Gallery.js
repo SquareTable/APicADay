@@ -29,15 +29,15 @@ const Gallery = () => {
 
     async function getPhotos() {
         let keys = await AsyncStorage.getAllKeys()
-        const data = await AsyncStorage.multiGet(keys)
+        keys = keys.filter((key) => key.slice(0, 6) === 'IMAGE-').map(item => item.substring(6))
 
-        const originalLength = data.length;
+        const originalLength = keys.length;
 
         const postsPerAd = 4; //This must be an even number
 
         const adsToShow = originalLength < postsPerAd + 1 ? 0 : Math.floor((originalLength - (postsPerAd + 1)) / postsPerAd + 1)
 
-        data.sort(([a], [b]) => parseInt(b) - parseInt(a))
+        keys.sort((a, b) => parseInt(b) - parseInt(a))
 
         for (let i = 0; i < adsToShow; i++) {
             //The first ad will be placed after the first 4 ads
@@ -47,14 +47,20 @@ const Gallery = () => {
             //Because of that, we add 2 ad items to the array, but we are only going to be displaying one ad
             //The 2nd ad item is to prevent an image not getting shown in the list because numColumns is set to 2
 
-            data.splice(postsPerAd + (postsPerAd + 2) * i, 0, {ad: true, key: `AD-${i}`}, {ad: 'placeholder', key: `AD-PLACEHOLDER-${i}`})
+            keys.splice(postsPerAd + (postsPerAd + 2) * i, 0, {ad: true, key: `AD-${i}`}, {ad: 'placeholder', key: `AD-PLACEHOLDER-${i}`})
         }
 
-        const [streak, streakWarning, photoTakenToday] = calculateStreak(data)
-        setStreak(streak)
-        setStreakWarning(streakWarning)
-        setPhotoTakenToday(photoTakenToday)
-        setPhotos(data)
+        const [error, streak, streakWarning, photoTakenToday] = await calculateStreak()
+
+        if (!error) {
+            setStreak(streak)
+            setStreakWarning(streakWarning)
+            setPhotoTakenToday(photoTakenToday)
+        } else {
+            setStreak('ERROR')
+        }
+        
+        setPhotos(keys)
     }
 
     useEffect(() => {
@@ -97,8 +103,39 @@ const Gallery = () => {
         };
     }, [passwordIsSet]);
 
-    const deleteImage = (dateCreated) => {
-        AsyncStorage.removeItem(dateCreated).then(() => {
+    const deleteImage = async (dateCreated) => {
+        const dateCreatedDateObject = new Date(parseInt(dateCreated))
+        const currentDate = new Date();
+
+        if (currentDate.getDate() === dateCreatedDateObject.getDate() && currentDate.getMonth() === dateCreatedDateObject.getMonth() && currentDate.getFullYear() === dateCreatedDateObject.getFullYear()) {
+            //Photo was taken today so take away one from the streak
+            let streakCount;
+            try {
+                const streak = parseInt(await AsyncStorage.getItem('current-streak'))
+                if (isNaN(streak)) {
+                    streakCount = 0
+                } else {
+                    streakCount = streak - 1
+                }
+            } catch (error) {
+                console.error(error)
+                alert('An error occurred while deleting item.')
+            }
+
+            try {
+                await AsyncStorage.setItem('current-streak', String(streakCount))
+            } catch (error) {
+                console.error(error)
+                alert('An error occurred while deleting photo.')
+            }
+        }
+
+        if (photos.length === 1) {
+            //The user is deleting the last image, so remove the streak
+            await AsyncStorage.removeItem('current-streak')
+        }
+
+        AsyncStorage.removeItem('IMAGE-' + dateCreated).then(() => {
             getPhotos()
         }).catch(error => {
             console.error(error)
@@ -170,53 +207,41 @@ const Gallery = () => {
         }
     }
 
-    const calculateStreak = (sortedPhotos) => {
-        let dateToCheckAgainst = new Date();
-        const msInDay = 24 * 60 * 60 * 1000;
-        let streakCount = 0;
-        let streakWarning = false;
-        let photosIterated = 0;
-        let photoTakenToday = false;
+    const calculateStreak = async () => {
+        let returnValue;
 
-        const currentDate = dateToCheckAgainst.getDate();
-        const currentMonth = dateToCheckAgainst.getMonth();
-        const currentYear = dateToCheckAgainst.getFullYear();
+        await Promise.all([
+            AsyncStorage.getItem('current-streak'),
+            AsyncStorage.getItem('previous-streak-date-ms')
+        ]).then(async ([currentStreak, previousStreakTime]) => {
+            let currentStreakCount = currentStreak ? parseInt(currentStreak) : 0
+            const previousStreakDateObject = new Date(parseInt(previousStreakTime))
 
-        for (const photo of sortedPhotos) {
-            const photoDateMS = photo[0]
-            photosIterated++;
+            const currentDate = new Date();
+            const yesterdayDate = new Date(currentDate.getTime() - 1000 * 60 * 60 * 24)
 
-            const photoDate = new Date(parseInt(photoDateMS));
-            const photoYearTaken = photoDate.getFullYear();
-            const photoMonthTaken = photoDate.getMonth();
-            const photoDateTaken = photoDate.getDate();
+            const photoTakenToday = currentDate.getDate() === previousStreakDateObject.getDate() && currentDate.getMonth() === previousStreakDateObject.getMonth() && currentDate.getFullYear() === previousStreakDateObject.getFullYear()
+            const streakWarning = yesterdayDate.getDate() === previousStreakDateObject.getDate() && yesterdayDate.getMonth() === previousStreakDateObject.getMonth() && yesterdayDate.getFullYear() === previousStreakDateObject.getFullYear()
 
-            if (photoDateTaken === currentDate && photoMonthTaken === currentMonth && photoYearTaken === currentYear) {
-                streakCount++;
-                photoTakenToday = true;
-                continue;
+            if (!photoTakenToday && !streakWarning) {
+                //Photo was not taken today or yesterday o streak has ended
+                try {
+                    await AsyncStorage.setItem('current-streak', '0')
+                } catch (error) {
+                    console.error(error)
+                    returnValue = [true]
+                }
+
+                returnValue = [false, 0, false, false]
             }
 
-            dateToCheckAgainst = new Date(dateToCheckAgainst.getTime() - msInDay)
+            returnValue = [false, currentStreakCount, streakWarning, photoTakenToday]
+        }).catch(error => {
+            console.error(error)
+            returnValue = [true]
+        })
 
-            const dateToCheckAgainstDate = dateToCheckAgainst.getDate();
-            const dateToCheckAgainstMonth = dateToCheckAgainst.getMonth();
-            const dateToCheckAgainstYear = dateToCheckAgainst.getFullYear();
-
-            if (photosIterated === 1 && dateToCheckAgainstDate === photoDateTaken && dateToCheckAgainstMonth === photoMonthTaken && dateToCheckAgainstYear === photoYearTaken) {
-                //If the most recent photo was taken yesterday
-                streakWarning = true;
-            }
-
-            if (photoYearTaken === dateToCheckAgainstYear && dateToCheckAgainstMonth === photoMonthTaken && dateToCheckAgainstDate === photoDateTaken) {
-                streakCount++;
-                continue;
-            }
-
-            break
-        }
-
-        return [streakCount, streakWarning, photoTakenToday]
+        return returnValue;
     }
 
     return (
@@ -282,7 +307,7 @@ const Gallery = () => {
                             )}
                             <FlatList
                                 data={photos}
-                                keyExtractor={(item) => item.key || item[0]}
+                                keyExtractor={(item) => item.key || item}
                                 renderItem={({item}) => item.ad === true ? <Ad/> : item.ad === 'placeholder' ? null : <Photo item={item} deleteImage={deleteImage} colors={colors}/>}
                                 numColumns={2}
                                 ListHeaderComponent={
