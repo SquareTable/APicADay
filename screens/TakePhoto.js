@@ -86,6 +86,7 @@ const TakePhoto = () => {
             })
             .catch((err) => {
                 console.error(err.message);
+                alert('An error occurred:' + err.message)
             });
         }).catch(error => {
             alert('An error occurred while saving:' + error)
@@ -105,9 +106,9 @@ const TakePhoto = () => {
                     <ActivityIndicator size="large" color={colors.text}/>
                 : cameraPermission === "authorized" ?
                     !frontDevice && !backDevice ?
-                        <Text style={{fontSize: 24, textAlign: 'center', fontWeight: 'bold', marginHorizontal: 10, color: colors.text}}>Could not find a camera device to use</Text>
+                        <Text style={{fontSize: 24, textAlign: 'center', fontWeight: 'bold', marginHorizontal: 10, color: colors.text}}>Could not find a camera device to use.</Text>
                     : takenPhotoToday ?
-                        <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>You have already taken a photo today. Come back tomorrow</Text>
+                        <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>You have already taken a photo today. Please come back tomorrow.</Text>
                     :
                         device == null ?
                             <ActivityIndicator size="large" color={colors.text}/>
@@ -129,7 +130,7 @@ const TakePhoto = () => {
                             </>
                 : cameraPermission === "not-determined" ?
                     <>
-                        <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>APicADay needs access to your camera to function</Text>
+                        <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>APicADay needs access to your camera to function.</Text>
                         <TouchableOpacity onPress={allowCameraAccess} style={{paddingHorizontal: 20, paddingVertical: 10, borderColor: colors.text, borderWidth: 2, borderRadius: 10}}>
                             <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>Allow Camera Usage</Text>
                         </TouchableOpacity>

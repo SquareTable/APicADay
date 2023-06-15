@@ -28,7 +28,7 @@ const Gallery = () => {
     const [photoTakenToday, setPhotoTakenToday] = useState(false)
 
     async function getPhotos() {
-        const keys = await AsyncStorage.getAllKeys()
+        let keys = await AsyncStorage.getAllKeys()
         const data = await AsyncStorage.multiGet(keys)
 
         const originalLength = data.length;
@@ -182,7 +182,8 @@ const Gallery = () => {
         const currentMonth = dateToCheckAgainst.getMonth();
         const currentYear = dateToCheckAgainst.getFullYear();
 
-        for (const [photoDateMS] of sortedPhotos) {
+        for (const photo of sortedPhotos) {
+            const photoDateMS = photo[0]
             photosIterated++;
 
             const photoDate = new Date(parseInt(photoDateMS));
@@ -302,10 +303,11 @@ const Gallery = () => {
                         </SafeAreaView>
                     :
                         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                            <Text style={{fontSize: 30, marginTop: 30, color: colors.text}}>You have no photos.</Text>
+                            <Text style={{fontSize: 30, color: colors.text}}>You have no photos.</Text>
+                            <Text style={{fontSize: 14, marginVertical: 30, color: colors.text, textAlign: 'center'}}>When you take photos in APicADay, they will show up here.</Text>
                             <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
                                 <Circle width={15} color={passwordIsSet ? 'green' : 'red'}/>
-                                <Text style={{fontSize: 15, color: colors.text}}>{passwordIsSet ? 'Your gallery is protected with a password' : 'Your gallery does not have a password set'}</Text>
+                                <Text style={{fontSize: 15, color: colors.text}}>{passwordIsSet ? 'Your gallery is protected with a password' : "Your gallery doesn't have a password set"}</Text>
                             </View>
                             <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', marginTop: 20}}>
                                 {passwordIsSet ?

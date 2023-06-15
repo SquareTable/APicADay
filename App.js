@@ -1,5 +1,6 @@
+import 'react-native-gesture-handler';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
-import Tabs from './navigation/tabs';
+import Tabs from './navigation/Tabs.js';
 import { useColorScheme, Platform } from 'react-native'
 import mobileAds, { MaxAdContentRating, TestIds } from 'react-native-google-mobile-ads';
 import { useEffect, useState } from 'react';
@@ -7,8 +8,10 @@ import DeviceInfo from 'react-native-device-info'
 const appConfig = require('./config.json');
 import { AdIdContext } from './context/AdIdContext';
 import { StatusBar } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppStylingContext } from './context/AppStylingContext';
 
-const EditedDefaultTheme = {
+const EditedLightTheme = {
     ...DefaultTheme,
     colors: {
         ...DefaultTheme.colors,
@@ -28,6 +31,7 @@ const App = () => {
     const colorScheme = useColorScheme()
     const productionAdId = Platform.OS === 'ios' ? appConfig.ios_ad_id : appConfig.android_ad_id
     const [adId, setAdId] = useState(__DEV__ || DeviceInfo.isEmulatorSync() ? TestIds.BANNER : productionAdId)
+    const [appStylingContextState, setAppStylingContextState] = useState(null)
 
     useEffect(() => {
         mobileAds()
@@ -57,15 +61,26 @@ const App = () => {
         });
     }, [])
 
+    useEffect(() => {
+        AsyncStorage.getItem('AppStylingContextState', (result) => {
+            if (!result) AsyncStorage.setItem('AppStylingContextState', 'Default')
+            setAppStylingContextState(result || 'Default')
+        })
+    }, [])
+
+    const theme = appStylingContextState === 'Default' ? colorScheme === 'dark' ? EditedDarkTheme : EditedLightTheme : appStylingContextState === 'Dark' ? EditedDarkTheme : EditedLightTheme
+
     return (
         <AdIdContext.Provider value={{adId, setAdId}}>
-            <NavigationContainer theme={colorScheme === 'dark' ? EditedDarkTheme : EditedDefaultTheme}>
-                <StatusBar
-                    animated={true}
-                    barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
-                />
-                <Tabs/>
-            </NavigationContainer>
+            <AppStylingContext.Provider value={{appStylingContextState, setAppStylingContextState}}>
+                <NavigationContainer theme={theme}>
+                    <StatusBar
+                        animated={true}
+                        barStyle={theme.dark ? 'light-content' : 'dark-content'}
+                    />
+                    <Tabs/>
+                </NavigationContainer>
+            </AppStylingContext.Provider>
         </AdIdContext.Provider>
     )
 }
