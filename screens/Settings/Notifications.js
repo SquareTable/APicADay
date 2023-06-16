@@ -6,40 +6,11 @@ import ToggleOption from "../../components/ToggleOption";
 import DatePicker from 'react-native-date-picker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-async function requestUserPermission() {
-    const settings = await notifee.requestPermission({
-        alert: true
-      });
-
-    console.log('Permission settings:', settings);
-  
-    if (settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED) {
-      alert('Authorized')
-    } else {
-      alert('Not authorised')
-    }
-}
-
-async function checkNotificationPermissions() {
-    const settings = await notifee.getNotificationSettings();
-    setNotificationAuthorizationStatus(settings.authorizationStatus)
-
-    console.log('Permission settings:', settings);
-  
-    if (settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED) {
-      alert('Authorized')
-    } else if (settings.authorizationStatus === AuthorizationStatus.NOT_DETERMINED) {
-        alert('Not determined yet')
-    } else {
-      alert('Not authorised')
-    }
-}
-
 const NotificationsSettings = () => {
     const [notificationAuthorizationStatus, setNotificationAuthorizationStatus] = useState(null)
     const [notificationsEnabled, setNotificationsEnabled] = useState(null)
     const theme = useTheme();
-    const {colors} = theme;
+    const {colors, dark} = theme;
     const [date, setDate] = useState(new Date())
     const [notificationTimeString, setNotificationTimeString] = useState(null)
 
@@ -214,7 +185,7 @@ const NotificationsSettings = () => {
             {notificationsEnabled && (
                 <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
                     <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text, textAlign: 'center'}}>Time to receive notification:</Text>
-                    <DatePicker date={date} onDateChange={setDate} mode="time"/>
+                    <DatePicker date={date} onDateChange={setDate} mode="time" textColor={dark ? '#FFFFFF' : '#000000'}/>
                     <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text, textAlign: 'center'}}>You will receieve a notification daily at: {notificationTimeString}</Text>
                 </View>
             )}
