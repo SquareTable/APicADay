@@ -62,9 +62,11 @@ const App = () => {
     }, [])
 
     useEffect(() => {
-        AsyncStorage.getItem('AppStylingContextState', (result) => {
+        AsyncStorage.getItem('AppStylingContextState').then(result => {
             if (!result) AsyncStorage.setItem('AppStylingContextState', 'Default')
             setAppStylingContextState(result || 'Default')
+        }).catch(error => {
+            console.error('An error occurred while getting AppStylingContextState from AsyncStorage:', error)
         })
     }, [])
 
