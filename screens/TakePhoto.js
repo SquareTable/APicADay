@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import {View, Text, Linking, TouchableOpacity, StyleSheet, ActivityIndicator} from 'react-native';
+import {View, Text, Linking, TouchableOpacity, StyleSheet, ActivityIndicator, AppState} from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import { useIsFocused, useTheme } from '@react-navigation/native';
 import RNFS from 'react-native-fs';
@@ -22,41 +22,56 @@ const TakePhoto = () => {
 
     console.log(device)
 
+    const setupTakePhotoScreen = async () => {
+        const status = await Camera.getCameraPermissionStatus()
+        if (status === 'authorized') {
+            const keys = await AsyncStorage.getAllKeys()
+
+            const now = new Date()
+
+            const index = keys.findIndex(key => {
+                //key is "IMAGE-" + createdAt
+                if (key.slice(0, 6) !== 'IMAGE-') return false
+
+                const createdDate = new Date(parseInt(key.substring(6)))
+
+                if (createdDate.getFullYear() !== now.getFullYear()) {
+                    return false
+                }
+
+                if (createdDate.getMonth() !== now.getMonth()) {
+                    return false
+                }
+
+                if (createdDate.getDate() !== now.getDate()) {
+                    return false
+                }
+
+                return true
+            })
+
+            setTakenPhotoToday(index !== -1)
+        }
+        setCameraPermission(status)
+    }
+
 
     useEffect(() => {
-        (async function() {
-            const status = await Camera.getCameraPermissionStatus()
-            if (status === 'authorized') {
-                const keys = await AsyncStorage.getAllKeys()
-
-                const now = new Date()
-
-                const index = keys.findIndex(key => {
-                    //key is "IMAGE-" + createdAt
-                    if (key.slice(0, 6) !== 'IMAGE-') return false
-
-                    const createdDate = new Date(parseInt(key.substring(6)))
-
-                    if (createdDate.getFullYear() !== now.getFullYear()) {
-                        return false
-                    }
-
-                    if (createdDate.getMonth() !== now.getMonth()) {
-                        return false
-                    }
-
-                    if (createdDate.getDate() !== now.getDate()) {
-                        return false
-                    }
-
-                    return true
-                })
-
-                setTakenPhotoToday(index !== -1)
-            }
-            setCameraPermission(status)
-        })();
+        setupTakePhotoScreen()
     }, [focused])
+
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (nextAppState === 'active') {
+                setupTakePhotoScreen()
+            }
+        });
+    
+        return () => {
+            console.log('Removing AppState listener on TakePhoto.js')
+            subscription.remove();
+        };
+    }, []);
 
     const openSettings = async () => {
         await Linking.openSettings();
