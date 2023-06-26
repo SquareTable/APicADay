@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { AppStylingContext } from "../../context/AppStylingContext";
 import { useTheme } from "@react-navigation/native";
@@ -6,10 +6,20 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import RadioButton from "../../components/RadioButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AppStyling = () => {
     const {appStylingContextState, setAppStylingContextState} = useContext(AppStylingContext);
     const { colors } = useTheme();
+
+    useEffect(() => {
+        AsyncStorage.setItem('AppStylingContextState', String(appStylingContextState)).then(() => {
+            console.log('Successfully saved')
+        }).catch(error => {
+            console.error('An error occurred while saving appStylingContextState to AppStylingContextState in AsyncStorage:', error)
+            alert('An error occurred while saving app styling choice. Please try again.')
+        })
+    }, [appStylingContextState])
 
     return (
         <View style={{flex: 1, justifyContent: 'space-around', alignItems: 'center', flexDirection: 'row'}}>
