@@ -8,23 +8,31 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
 const TakePhoto = () => {
+    const [wideAngleCamera, setWideAngleCamera] = useState(null)
     const [cameraPermission, setCameraPermission] = useState()
-    const devices = useCameraDevices('wide-angle-camera')
-    const frontAndBackEnabled = !!(devices.front && devices.back);
+    const devices = useCameraDevices()
     const frontDevice = devices.front;
-    const backDevice = devices.back;
-    const device = devices.back;
+    //If the wideAngleCamera could be found, use that (since generally it has the best quality) otherwise use any back camera
+    const backDevice = wideAngleCamera ? wideAngleCamera : devices.back
     const focused = useIsFocused();
     const camera = useRef();
     const [takenPhotoToday, setTakenPhotoToday] = useState(null)
     const [chosenCamera, setChosenCamera] = useState('back')
     const { colors } = useTheme()
+    const frontAndBackEnabled = frontDevice && backDevice ? true : false;
+    const device = frontAndBackEnabled ? chosenCamera === 'front' ? frontDevice : backDevice : frontDevice || backDevice
 
     console.log(device)
 
     const setupTakePhotoScreen = async () => {
         const status = await Camera.getCameraPermissionStatus()
         if (status === 'authorized') {
+            const wideAngleCameraFound = (await Camera.getAvailableCameraDevices()).find(device => device.devices.length === 1 && device.devices[0] === 'wide-angle-camera' && device.position === 'back')
+
+            if (wideAngleCameraFound) {
+                setWideAngleCamera(wideAngleCameraFound)
+            }
+
             const keys = await AsyncStorage.getAllKeys()
 
             const now = new Date()
@@ -142,7 +150,7 @@ const TakePhoto = () => {
                             <>
                                 <Camera
                                     style={{height: '100%', width: '100%'}}
-                                    device={frontAndBackEnabled ? chosenCamera === 'front' ? frontDevice : backDevice : frontDevice || backDevice}
+                                    device={device}
                                     isActive={focused}
                                     photo={true}
                                     ref={camera}
