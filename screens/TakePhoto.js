@@ -103,7 +103,7 @@ const TakePhoto = () => {
                 flash: "off"
             })
         } else {
-            alert('You must be on either iOS or Android. Your current platform:' + Platform.OS)
+            alert('You must be on either iOS or Android. Detected platform:' + Platform.OS)
             return
         }
 
