@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import {View, Text, Linking, TouchableOpacity, StyleSheet, ActivityIndicator, AppState} from 'react-native';
+import {View, Text, Linking, TouchableOpacity, StyleSheet, ActivityIndicator, AppState, Platform} from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import { useIsFocused, useTheme } from '@react-navigation/native';
 import RNFS from 'react-native-fs';
@@ -90,9 +90,22 @@ const TakePhoto = () => {
     }
 
     const takePhoto = async () => {
-        const photo = await camera.current.takePhoto({
-            flash: 'off'
-        })
+        let photo;
+        if (Platform.OS === 'ios') {
+            photo = await camera.current.takePhoto({
+                flash: 'off',
+                qualityPrioritization: 'speed'
+            })
+        } else if (Platform.OS === 'android') {
+            photo = await camera.current.takeSnapshot({
+                quality: 50,
+                skipMetadata: true,
+                flash: "off"
+            })
+        } else {
+            alert('You must be on either iOS or Android. Your current platform:' + Platform.OS)
+            return
+        }
 
         const nowMs = Date.now()
         const base64 = await RNFS.readFile(photo.path, 'base64');
