@@ -25,9 +25,16 @@ const NotificationsSettings = () => {
                 if (value) {
                     const date = new Date();
                     const splitValue = value.split(':')
+                    
+                    const AM = value.slice(-2) === “AM”
+                    let hours = parseInt(splitValue[1])
+                    if (AM) hours += 12
 
-                    date.setHours(parseInt(splitValue[0]))
+                    date.setHours(hours)
                     date.setMinutes(parseInt(splitValue[1]))
+                    
+                    const AM = splitValue[1].slice(-2) === “AM”
+                    if (AM) 
 
                     setDate(date)
                     setNotificationTimeString(value)
