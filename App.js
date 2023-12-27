@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
-import Tabs from './navigation/Tabs.js';
+import Tabs from './navigation/tabs.js';
 import { useColorScheme, Platform } from 'react-native'
 import mobileAds, { MaxAdContentRating, TestIds } from 'react-native-google-mobile-ads';
 import { useEffect, useState } from 'react';
