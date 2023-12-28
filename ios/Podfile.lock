@@ -502,33 +502,10 @@ PODS:
     - RNNotifee/NotifeeCore (= 7.7.1)
   - RNNotifee/NotifeeCore (7.7.1):
     - React-Core
-  - RNReanimated (2.17.0):
-    - DoubleConversion
-    - FBLazyVector
-    - FBReactNativeSpec
-    - glog
-    - RCT-Folly
-    - RCTRequired
-    - RCTTypeSafety
-    - React-callinvoker
+  - RNReanimated (3.6.1):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
-    - React-Core/DevSupport
-    - React-Core/RCTWebSocket
-    - React-CoreModules
-    - React-cxxreact
-    - React-jsi
-    - React-jsiexecutor
-    - React-jsinspector
-    - React-RCTActionSheet
-    - React-RCTAnimation
-    - React-RCTBlob
-    - React-RCTImage
-    - React-RCTLinking
-    - React-RCTNetwork
-    - React-RCTSettings
-    - React-RCTText
     - ReactCommon/turbomodule/core
-    - Yoga
   - RNScreens (3.20.0):
     - React-Core
     - React-RCTImage
@@ -541,7 +518,7 @@ PODS:
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
   - SocketRocket (0.6.0)
-  - VisionCamera (2.15.4):
+  - VisionCamera (3.6.17):
     - React
     - React-callinvoker
     - React-Core
@@ -817,13 +794,13 @@ SPEC CHECKSUMS:
   RNGestureHandler: 42ec7c28dd02d540ed6c9159c57a98ff016492dc
   RNGoogleMobileAds: 10d104d0c086f0b189a03390b210a38c3806b70d
   RNNotifee: 05692d7bb42b6c718a3906aeb8431c48ff2e8097
-  RNReanimated: f186e85d9f28c9383d05ca39e11dd194f59093ec
+  RNReanimated: dc83bf2068bbc91572938337c5b2030641de1415
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
-  VisionCamera: c6356b309f7b8e185b7be2e703ec67bb35acf345
+  VisionCamera: 3cb14dbbf94962e123f56b3f6afe6c6fe5dac955
   Yoga: 065f0b74dba4832d6e328238de46eb72c5de9556
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
