@@ -80,22 +80,10 @@ const TakePhoto = () => {
     }
 
     const takePhoto = async () => {
-        let photo;
-        if (Platform.OS === 'ios') {
-            photo = await camera.current.takePhoto({
-                flash: 'off',
-                qualityPrioritization: 'speed'
-            })
-        } else if (Platform.OS === 'android') {
-            photo = await camera.current.takeSnapshot({
-                quality: 50,
-                skipMetadata: true,
-                flash: "off"
-            })
-        } else {
-            alert('You must be on either iOS or Android. Detected platform:' + Platform.OS)
-            return
-        }
+        const photo = await camera.current.takePhoto({
+            flash: 'off',
+            qualityPrioritization: 'speed'
+        })
 
         const nowMs = Date.now()
         const base64 = await RNFS.readFile(photo.path, 'base64');
