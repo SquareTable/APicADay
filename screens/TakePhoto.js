@@ -1,6 +1,6 @@
 import {useState, useEffect, useRef} from 'react';
 import {View, Text, Linking, TouchableOpacity, StyleSheet, ActivityIndicator, AppState, Platform} from 'react-native';
-import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import { Camera, useCameraDevice, useCameraDevices } from 'react-native-vision-camera';
 import { useIsFocused, useTheme } from '@react-navigation/native';
 import RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,12 +8,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
 const TakePhoto = () => {
-    const [wideAngleCamera, setWideAngleCamera] = useState(null)
     const [cameraPermission, setCameraPermission] = useState()
-    const devices = useCameraDevices()
-    const frontDevice = devices.front;
+    const frontDevice = useCameraDevice('front')
     //If the wideAngleCamera could be found, use that (since generally it has the best quality) otherwise use any back camera
-    const backDevice = wideAngleCamera ? wideAngleCamera : devices.back
+    const backDevice = useCameraDevice('back')
     const focused = useIsFocused();
     const camera = useRef();
     const [takenPhotoToday, setTakenPhotoToday] = useState(null)
@@ -22,17 +20,9 @@ const TakePhoto = () => {
     const frontAndBackEnabled = frontDevice && backDevice ? true : false;
     const device = frontAndBackEnabled ? chosenCamera === 'front' ? frontDevice : backDevice : frontDevice || backDevice
 
-    console.log(device)
-
     const setupTakePhotoScreen = async () => {
         const status = await Camera.getCameraPermissionStatus()
-        if (status === 'authorized') {
-            const wideAngleCameraFound = (await Camera.getAvailableCameraDevices()).find(device => device.devices.length === 1 && device.devices[0] === 'wide-angle-camera' && device.position === 'back')
-
-            if (wideAngleCameraFound) {
-                setWideAngleCamera(wideAngleCameraFound)
-            }
-
+        if (status === 'granted') {
             const keys = await AsyncStorage.getAllKeys()
 
             const now = new Date()
@@ -151,7 +141,7 @@ const TakePhoto = () => {
             {
                 cameraPermission == undefined ?
                     <ActivityIndicator size="large" color={colors.text}/>
-                : cameraPermission === "authorized" ?
+                : cameraPermission === "granted" ?
                     !frontDevice && !backDevice ?
                         <Text style={{fontSize: 24, textAlign: 'center', fontWeight: 'bold', marginHorizontal: 10, color: colors.text}}>Could not find a camera device to use.</Text>
                     : takenPhotoToday ?
