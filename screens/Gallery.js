@@ -8,16 +8,11 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import Fontisto from 'react-native-vector-icons/Fontisto'
 import Ad from '../components/Ad';
 
-const Gallery = () => {
+const Gallery = ({navigation}) => {
     const [photos, setPhotos] = useState(null)
     const isFocused = useIsFocused();
     const [passwordIsSet, setPasswordIsSet] = useState(null)
     const [locked, setLocked] = useState(null)
-    const [creatingPassword, setCreatingPassword] = useState(false)
-    const [enterPassword, changeEnterPassword] = useState('')
-    const [confirmPassword, changeConfirmPassword] = useState('')
-    const [createPasswordError, setCreatePasswordError] = useState(null)
-    const [processingPasswordGeneration, setProcessingPasswordGeneration] = useState(false)
     const [passwordText, setPasswordText] = useState('')
     const [unlockingError, setUnlockingError] = useState(null)
     const { colors } = useTheme();
@@ -141,38 +136,6 @@ const Gallery = () => {
         })
     }
 
-    const setPassword = async () => {
-        setCreatePasswordError(null)
-        setProcessingPasswordGeneration(true)
-
-        if (enterPassword !== confirmPassword) {
-            setProcessingPasswordGeneration(false)
-            return setCreatePasswordError('Passwords do not match')
-        }
-
-        if (enterPassword.length < 8) {
-            setProcessingPasswordGeneration(false)
-            return setCreatePasswordError('Password must be longer than 8 characters')
-        }
-
-        if (enterPassword.length > 17) {
-            setProcessingPasswordGeneration(false)
-            return setCreatePasswordError('Due to current limitations, the password cannot be more than 17 characters')
-        }
-
-        try {
-            await EncryptedStorage.setItem('app-password', enterPassword)
-            setPasswordIsSet(true)
-            setProcessingPasswordGeneration(false)
-            setCreatingPassword(false)
-            changeEnterPassword('')
-            changeConfirmPassword('')
-        } catch (error) {
-            setProcessingPasswordGeneration(false)
-            setCreatePasswordError('An error occurred:', error)
-        }
-    }
-
     const lockGallery = () => {
         setLocked(true)
     }
@@ -192,16 +155,6 @@ const Gallery = () => {
             console.error(error)
             setUnlockingError('An error occurred:' + error)
             setPasswordText('')
-        }
-    }
-
-    const removePassword = async () => {
-        try {
-            await EncryptedStorage.removeItem('app-password')
-            setPasswordIsSet(false)
-        } catch (error) {
-            console.error(error)
-            alert('An error occurred while removing password')
         }
     }
 
@@ -258,45 +211,8 @@ const Gallery = () => {
                                 </TouchableOpacity>
                             </View>
                         </TouchableWithoutFeedback>
-                    : creatingPassword ?
-                        processingPasswordGeneration ?
-                            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                                <ActivityIndicator color={colors.text} size="large"/>
-                            </View>
-                        :
-                            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                                    <Text style={{fontSize: 20, color: colors.text}}>Create a Password</Text>
-                                    <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Enter a Password' placeholderTextColor={colors.text} value={enterPassword} onChangeText={changeEnterPassword} secureTextEntry/>
-                                    <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Confirm Password' placeholderTextColor={colors.text} value={confirmPassword} onChangeText={changeConfirmPassword} secureTextEntry/>
-                                    <Text style={{color: 'red', fontSize: 15, textAlign: 'center'}}>{createPasswordError || ' '}</Text>
-                                    <TouchableOpacity onPress={() => setCreatingPassword(false)} style={{borderWidth: 1, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10, borderColor: colors.text}}>
-                                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text}}>Cancel</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={setPassword} style={{borderWidth: 1, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10, borderColor: colors.text}}>
-                                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text}}>Save Password</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </TouchableWithoutFeedback>
                     : photos.length ?
                         <SafeAreaView style={{flex: 1}}>
-                            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10}}>
-                                <View style={{flexDirection: 'row'}}>
-                                    <Circle width={14} color={passwordIsSet ? 'green' : 'red'} style={{marginLeft: 10}}/>
-                                    <Text style={{fontSize: 14, marginLeft: 5, color: colors.text}}>Password: {passwordIsSet ? 'ON' : 'OFF'}</Text>
-                                </View>
-                                <View>
-                                    {passwordIsSet ?
-                                        <TouchableOpacity onPress={removePassword}>
-                                            <Text style={{fontSize: 14, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Remove Password</Text>
-                                        </TouchableOpacity>
-                                    :
-                                        <TouchableOpacity onPress={() => setCreatingPassword(true)}>
-                                            <Text style={{fontSize: 14, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginRight: 10}}>Turn on password</Text>
-                                        </TouchableOpacity>
-                                    }
-                                </View>
-                            </View>
                             {passwordIsSet && (
                                 <TouchableOpacity onPress={lockGallery} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10}}>
                                     <Fontisto name="locked" size={20} color={colors.link}/>
@@ -332,24 +248,16 @@ const Gallery = () => {
                                 <Circle width={15} color={passwordIsSet ? 'green' : 'red'}/>
                                 <Text style={{fontSize: 15, color: colors.text}}>{passwordIsSet ? 'Your gallery is protected with a password' : "Your gallery doesn't have a password set"}</Text>
                             </View>
-                            <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', marginTop: 20}}>
-                                {passwordIsSet ?
-                                    <>
-                                        <TouchableOpacity onPress={lockGallery}>
-                                            <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Lock Gallery</Text>
+                            {
+                                !passwordIsSet && (
+                                    <View style={{flexDirection: 'row', marginTop: 30}}>
+                                        <Text style={{fontSize: 16, color: colors.text}}>You can set a password for your gallery in </Text>
+                                        <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+                                            <Text style={{fontSize: 16, color: colors.link}}>Settings</Text>
                                         </TouchableOpacity>
-                                    </>
-                                :
-                                    <TouchableOpacity onPress={() => setCreatingPassword(true)}>
-                                        <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Turn on password</Text>
-                                    </TouchableOpacity>
-                                }
-                            </View>
-                            {passwordIsSet && (
-                                <TouchableOpacity onPress={removePassword}>
-                                    <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginTop: 25}}>Remove Password</Text>
-                                </TouchableOpacity>
-                            )}
+                                    </View>
+                                )
+                            }
                         </View>
                 :
                     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
