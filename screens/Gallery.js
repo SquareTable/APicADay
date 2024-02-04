@@ -6,8 +6,6 @@ import { useIsFocused, useTheme } from '@react-navigation/native';
 import Circle from '../components/Circle';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import Fontisto from 'react-native-vector-icons/Fontisto'
-import { AdIdContext } from '../context/AdIdContext';
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import Ad from '../components/Ad';
 
 const Gallery = () => {
