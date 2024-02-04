@@ -35,6 +35,11 @@ export default function GalleryPasswordSettings() {
         getIsPasswordSet()
     }, [])
 
+    function resetInputs() {
+        changeEnterPassword('')
+        changeConfirmPassword('')
+    }
+
     async function setPassword() {
         setCreatePasswordError(null)
         setProcessingPassword(true)
@@ -59,8 +64,7 @@ export default function GalleryPasswordSettings() {
             setPasswordSet(true)
             setProcessingPassword(false)
             setPasswordView(null)
-            changeEnterPassword('')
-            changeConfirmPassword('')
+            resetInputs()
         } catch (error) {
             setProcessingPassword(false)
             setCreatePasswordError('An error occurred: ' + error)
@@ -76,19 +80,24 @@ export default function GalleryPasswordSettings() {
                     await EncryptedStorage.removeItem('app-password')
                     setPasswordSet(false)
                     setPasswordView(null)
+                    resetInputs()
                 } catch (error) {
                     console.error(error)
                     setUnlockingError('An error occurred while removing password: ' + error)
                 }
             } else {
                 setUnlockingError('Wrong password')
-                changeEnterPassword('')
+                resetInputs()
             }
         } catch(error) {
             console.error(error)
             setUnlockingError('An error occurred:' + error)
-            changeEnterPassword('')
         }
+    }
+
+    function cancelPasswordView() {
+        setPasswordView(null)
+        resetInputs()
     }
 
     return (
@@ -106,7 +115,7 @@ export default function GalleryPasswordSettings() {
                                 <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder="Enter Password" placeholderTextColor={colors.text} value={enterPassword} onChangeText={changeEnterPassword} secureTextEntry/>
                                 {passwordView === 'Enabling' && <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Confirm Password' placeholderTextColor={colors.text} value={confirmPassword} onChangeText={changeConfirmPassword} secureTextEntry/>}
                                 <Text style={{color: 'red', fontSize: 15, textAlign: 'center'}}>{(passwordView === 'Enabling' ? createPasswordError : unlockingError) || ' '}</Text>
-                                <TouchableOpacity onPress={() => setPasswordView(null)} style={{borderWidth: 1, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10, borderColor: colors.text}}>
+                                <TouchableOpacity onPress={cancelPasswordView} style={{borderWidth: 1, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10, borderColor: colors.text}}>
                                     <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text}}>Cancel</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => passwordView === 'Enabling' ? setPassword() : removePassword()} style={{borderWidth: 1, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10, borderColor: colors.text}}>
