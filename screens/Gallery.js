@@ -32,6 +32,7 @@ const Gallery = ({navigation}) => {
     const [searchActive, setSearchActive] = useState(false)
     const [startDateSelectorOpen, setStartDateSelectorOpen] = useState(false);
     const [endDateSelectorOpen, setEndDateSelectorOpen] = useState(false);
+    const [searching, setSearching] = useState(false);
     const previousStartDate = useRef(null);
     const previousEndDate = useRef(null);
 
@@ -78,6 +79,10 @@ const Gallery = ({navigation}) => {
             setStreak('ERROR')
         }
         
+        if (searching) {
+            setSearching(false)
+        }
+
         setPhotos(keys)
     }
 
@@ -231,6 +236,7 @@ const Gallery = ({navigation}) => {
         if (!endDate || !startDate) return alert('Please enter a start and an end date')
         setSearchActive(true)
         setSearchOpen(false)
+        setSearching(true);
         previousStartDate.current = startDate;
         previousEndDate.current = endDate;
     }
@@ -250,6 +256,7 @@ const Gallery = ({navigation}) => {
             setStartDate(null)
             setEndDate(null)
             setSearchActive(false)
+            setSearching(true)
         }
     }
 
@@ -318,6 +325,10 @@ const Gallery = ({navigation}) => {
                             <Button onPress={() => cancelSearch()} text="Cancel"/>
                             <Button style={!endDate || !startDate ? {opacity: 0.7} : {opacity: 1}} onPress={startSearching} text="Search"/>
                         </SafeAreaView>
+                    : searching ?
+                        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <ActivityIndicator size="large" color={colors.text}/>
+                        </View>
                     : photos.length ?
                         <SafeAreaView style={{flex: 1}}>
                             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
