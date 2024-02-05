@@ -1,12 +1,19 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {View, Text, SafeAreaView, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, Alert, AppState} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Photo from '../components/Photo';
 import { useIsFocused, useTheme } from '@react-navigation/native';
 import Circle from '../components/Circle';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import Fontisto from 'react-native-vector-icons/Fontisto'
+import Fontisto from 'react-native-vector-icons/Fontisto';
+import Octicons from 'react-native-vector-icons/Octicons';
 import Ad from '../components/Ad';
+import Button from '../components/Button';
+import DatePicker from 'react-native-date-picker';
+
+function getDateString(date) {
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+}
 
 const Gallery = ({navigation}) => {
     const [photos, setPhotos] = useState(null)
@@ -19,10 +26,28 @@ const Gallery = ({navigation}) => {
     const [streak, setStreak] = useState(0)
     const [streakWarning, setStreakWarning] = useState(false)
     const [photoTakenToday, setPhotoTakenToday] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [startDate, setStartDate] = useState(null)
+    const [endDate, setEndDate] = useState(null)
+    const [searchActive, setSearchActive] = useState(false)
+    const [startDateSelectorOpen, setStartDateSelectorOpen] = useState(false);
+    const [endDateSelectorOpen, setEndDateSelectorOpen] = useState(false);
+    const previousStartDate = useRef(null);
+    const previousEndDate = useRef(null);
 
     async function getPhotos() {
         let keys = await AsyncStorage.getAllKeys()
         keys = keys.filter((key) => key.slice(0, 6) === 'IMAGE-').map(item => item.substring(6))
+
+        if (searchActive) {
+            const startMilliseconds = startDate.getTime();
+            const endMilliseconds = endDate.getTime();
+
+            keys = keys.filter(key => {
+                const intKey = parseInt(key);
+                return startMilliseconds <= intKey && intKey <= endMilliseconds
+            })
+        }
 
         const originalLength = keys.length;
 
@@ -76,12 +101,19 @@ const Gallery = ({navigation}) => {
         }
 
         if (isFocused) {
-            getPhotos()
             getIsPasswordSet()
         } else {
             if (passwordIsSet) setLocked(true)
         }
     }, [isFocused])
+
+    useEffect(() => {
+        if (isFocused) {
+            if (!searchActive || (startDate && endDate)) {
+                getPhotos();
+            }
+        }
+    }, [isFocused, searchActive, startDate, endDate])
 
     useEffect(() => {
         const subscription = AppState.addEventListener('change', nextAppState => {
@@ -195,30 +227,124 @@ const Gallery = ({navigation}) => {
         return returnValue;
     }
 
+    function startSearching() {
+        if (!endDate || !startDate) return alert('Please enter a start and an end date')
+        setSearchActive(true)
+        setSearchOpen(false)
+        previousStartDate.current = startDate;
+        previousEndDate.current = endDate;
+    }
+
+    function cancelSearch(resetDate) {
+        setSearchOpen(false)
+
+        if (startDate !== previousStartDate.current) {
+            setStartDate(previousStartDate.current)
+        }
+
+        if (endDate !== previousEndDate.current) {
+            setEndDate(previousEndDate.current)
+        }
+
+        if (resetDate) {
+            setStartDate(null)
+            setEndDate(null)
+            setSearchActive(false)
+        }
+    }
+
     return (
         <>
+            <DatePicker
+                modal
+                open={startDateSelectorOpen}
+                date={startDate === null ? new Date() : startDate}
+                onConfirm={(date) => {
+                    setStartDateSelectorOpen(false)
+                    date.setHours(0)
+                    date.setMinutes(0)
+                    date.setSeconds(0, 0)
+                    setStartDate(date)
+                }}
+                onCancel={() => {
+                    setStartDateSelectorOpen(false)
+                }}
+                mode="date"
+            />
+            <DatePicker
+                modal
+                open={endDateSelectorOpen}
+                date={endDate === null ? new Date() : endDate}
+                onConfirm={(date) => {
+                    setEndDateSelectorOpen(false)
+                    date.setHours(23)
+                    date.setMinutes(59)
+                    date.setSeconds(59, 999)
+                    setEndDate(date)
+                }}
+                onCancel={() => {
+                    setEndDateSelectorOpen(false)
+                }}
+                mode="date"
+            />
+
             {
                 passwordIsSet !== null && photos !== null && locked !== null ?
-                    locked ?
+                    false ?
                         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                                 <Fontisto name="locked" size={60} color={colors.text}/>
                                 <Text style={{fontSize: 30, fontWeight: 'bold', color: colors.text}}>Gallery is locked</Text>
                                 <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Enter Password' placeholderTextColor={colors.text} value={passwordText} onChangeText={setPasswordText} secureTextEntry/>
                                 <Text style={{color: 'red', fontSize: 15, textAlign: 'center'}}>{unlockingError || ' '}</Text>
-                                <TouchableOpacity onPress={unlockGallery} style={{borderWidth: 1, borderColor: colors.text, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10}}>
-                                    <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text}}>Unlock</Text>
-                                </TouchableOpacity>
+                                <Button onPress={unlockGallery} text="Unlock"/>
                             </View>
                         </TouchableWithoutFeedback>
+                    : searchOpen ?
+                        <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', width: '100%', marginBottom: 30}}>
+                                <View>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>Start Date</Text>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{startDate === null ? 'Not Set' : getDateString(startDate)}</Text>
+                                    <Button onPress={() => setStartDateSelectorOpen(true)} text={startDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
+                                </View>
+                                <View>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>End Date</Text>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{endDate === null ? 'Not Set' : getDateString(endDate)}</Text>
+                                    <Button onPress={() => setEndDateSelectorOpen(true)} text={endDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
+                                </View>
+                            </View>
+                            <Text style={{fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>Days to search: {!startDate || !endDate ? 0 : Math.floor((endDate / 1000 / 60 / 60 / 24) - (startDate / 1000 / 60 / 60 / 24))}</Text>
+                            <Button onPress={() => cancelSearch()} text="Cancel"/>
+                            <Button style={!endDate || !startDate ? {opacity: 0.7} : {opacity: 1}} onPress={startSearching} text="Search"/>
+                        </SafeAreaView>
                     : photos.length ?
                         <SafeAreaView style={{flex: 1}}>
-                            {passwordIsSet && (
-                                <TouchableOpacity onPress={lockGallery} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10}}>
-                                    <Fontisto name="locked" size={20} color={colors.link}/>
-                                    <Text style={{fontSize: 16, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginLeft: 10}}>Lock Gallery</Text>
+                            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                                <TouchableOpacity style={{paddingHorizontal: 10}} disabled={true}>
+                                    {/*FUNCTIONALITY COMING SOON! TOUCHABLEOPACITY IS MEANT TO BE DISABLED!*/}
+                                    <Octicons name="video" size={30} color={colors.background}/>
                                 </TouchableOpacity>
-                            )}
+                                {passwordIsSet ? (
+                                    <TouchableOpacity onPress={lockGallery} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10, alignSelf: 'center'}}>
+                                        <Fontisto name="locked" size={20} color={colors.link}/>
+                                        <Text style={{fontSize: 16, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginLeft: 10}}>Lock Gallery</Text>
+                                    </TouchableOpacity>
+                                ) : <View/>}
+                                <TouchableOpacity onPress={() => setSearchOpen(true)} style={{paddingHorizontal: 10}}>
+                                    <Fontisto name="search" size={30} color={colors.text}/>
+                                </TouchableOpacity>
+                            </View>
+                            {
+                                searchActive && (
+                                    <>
+                                        <Text style={{fontSize: 14, textAlign: 'center', color: colors.text}}>Active Search: {getDateString(startDate)} - {getDateString(endDate)}</Text>
+                                        <TouchableOpacity style={{paddingBottom: 5}} onPress={() => cancelSearch(true)}>
+                                            <Text style={{fontSize: 16, color: colors.link, textAlign: 'center'}}>Clear Search</Text>
+                                        </TouchableOpacity>
+                                    </>
+                                )
+                            }
                             <FlatList
                                 data={photos}
                                 keyExtractor={(item) => item.key || item}
@@ -226,16 +352,18 @@ const Gallery = ({navigation}) => {
                                 numColumns={2}
                                 ListHeaderComponent={
                                     <>
-                                        <View style={{width: '100%', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-                                            <Text style={{color: colors.text}}>🔥 Your streak is: {streak}</Text>
-                                            {streakWarning ? 
-                                                <Text style={{color: 'red'}}>Take a photo today to avoid losing your streak</Text>
-                                            : photoTakenToday ?
-                                                <Text style={{color: colors.text}}>You've added to your streak for today</Text>
-                                            :
-                                                <Text style={{color: colors.text}}>Take a photo everyday to build up your streak!</Text>
-                                            }
-                                        </View>
+                                        {!searchActive && (
+                                            <View style={{width: '100%', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+                                                <Text style={{color: colors.text}}>🔥 Your streak is: {streak}</Text>
+                                                {streakWarning ? 
+                                                    <Text style={{color: 'red'}}>Take a photo today to avoid losing your streak</Text>
+                                                : photoTakenToday ?
+                                                    <Text style={{color: colors.text}}>You've added to your streak for today</Text>
+                                                :
+                                                    <Text style={{color: colors.text}}>Take a photo everyday to build up your streak!</Text>
+                                                }
+                                            </View>
+                                        )}
                                     </>
                                 }
                             />
