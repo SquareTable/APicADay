@@ -297,7 +297,7 @@ const Gallery = ({navigation}) => {
 
             {
                 passwordIsSet !== null && photos !== null && locked !== null ?
-                    false ?
+                    locked ?
                         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                                 <Fontisto name="locked" size={60} color={colors.text}/>
