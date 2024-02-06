@@ -1,35 +1,54 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {View, Text, SafeAreaView, FlatList, ActivityIndicator, TouchableOpacity, TextInput, Keyboard, TouchableWithoutFeedback, Alert, AppState} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Photo from '../components/Photo';
 import { useIsFocused, useTheme } from '@react-navigation/native';
 import Circle from '../components/Circle';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import Fontisto from 'react-native-vector-icons/Fontisto'
-import { AdIdContext } from '../context/AdIdContext';
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import Fontisto from 'react-native-vector-icons/Fontisto';
+import Octicons from 'react-native-vector-icons/Octicons';
 import Ad from '../components/Ad';
+import Button from '../components/Button';
+import DatePicker from 'react-native-date-picker';
 
-const Gallery = () => {
+function getDateString(date) {
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+}
+
+const Gallery = ({navigation}) => {
     const [photos, setPhotos] = useState(null)
     const isFocused = useIsFocused();
     const [passwordIsSet, setPasswordIsSet] = useState(null)
     const [locked, setLocked] = useState(null)
-    const [creatingPassword, setCreatingPassword] = useState(false)
-    const [enterPassword, changeEnterPassword] = useState('')
-    const [confirmPassword, changeConfirmPassword] = useState('')
-    const [createPasswordError, setCreatePasswordError] = useState(null)
-    const [processingPasswordGeneration, setProcessingPasswordGeneration] = useState(false)
     const [passwordText, setPasswordText] = useState('')
     const [unlockingError, setUnlockingError] = useState(null)
     const { colors } = useTheme();
     const [streak, setStreak] = useState(0)
     const [streakWarning, setStreakWarning] = useState(false)
     const [photoTakenToday, setPhotoTakenToday] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [startDate, setStartDate] = useState(null)
+    const [endDate, setEndDate] = useState(null)
+    const [searchActive, setSearchActive] = useState(false)
+    const [startDateSelectorOpen, setStartDateSelectorOpen] = useState(false);
+    const [endDateSelectorOpen, setEndDateSelectorOpen] = useState(false);
+    const [searching, setSearching] = useState(false);
+    const previousStartDate = useRef(null);
+    const previousEndDate = useRef(null);
 
     async function getPhotos() {
         let keys = await AsyncStorage.getAllKeys()
         keys = keys.filter((key) => key.slice(0, 6) === 'IMAGE-').map(item => item.substring(6))
+
+        if (searchActive) {
+            const startMilliseconds = startDate.getTime();
+            const endMilliseconds = endDate.getTime();
+
+            keys = keys.filter(key => {
+                const intKey = parseInt(key);
+                return startMilliseconds <= intKey && intKey <= endMilliseconds
+            })
+        }
 
         const originalLength = keys.length;
 
@@ -60,6 +79,10 @@ const Gallery = () => {
             setStreak('ERROR')
         }
         
+        if (searching) {
+            setSearching(false)
+        }
+
         setPhotos(keys)
     }
 
@@ -83,12 +106,19 @@ const Gallery = () => {
         }
 
         if (isFocused) {
-            getPhotos()
             getIsPasswordSet()
         } else {
             if (passwordIsSet) setLocked(true)
         }
     }, [isFocused])
+
+    useEffect(() => {
+        if (isFocused) {
+            if (!searchActive || (startDate && endDate)) {
+                getPhotos();
+            }
+        }
+    }, [isFocused, searchActive, startDate, endDate])
 
     useEffect(() => {
         const subscription = AppState.addEventListener('change', nextAppState => {
@@ -143,38 +173,6 @@ const Gallery = () => {
         })
     }
 
-    const setPassword = async () => {
-        setCreatePasswordError(null)
-        setProcessingPasswordGeneration(true)
-
-        if (enterPassword !== confirmPassword) {
-            setProcessingPasswordGeneration(false)
-            return setCreatePasswordError('Passwords do not match')
-        }
-
-        if (enterPassword.length < 8) {
-            setProcessingPasswordGeneration(false)
-            return setCreatePasswordError('Password must be longer than 8 characters')
-        }
-
-        if (enterPassword.length > 17) {
-            setProcessingPasswordGeneration(false)
-            return setCreatePasswordError('Due to current limitations, the password cannot be more than 17 characters')
-        }
-
-        try {
-            await EncryptedStorage.setItem('app-password', enterPassword)
-            setPasswordIsSet(true)
-            setProcessingPasswordGeneration(false)
-            setCreatingPassword(false)
-            changeEnterPassword('')
-            changeConfirmPassword('')
-        } catch (error) {
-            setProcessingPasswordGeneration(false)
-            setCreatePasswordError('An error occurred:', error)
-        }
-    }
-
     const lockGallery = () => {
         setLocked(true)
     }
@@ -194,16 +192,6 @@ const Gallery = () => {
             console.error(error)
             setUnlockingError('An error occurred:' + error)
             setPasswordText('')
-        }
-    }
-
-    const removePassword = async () => {
-        try {
-            await EncryptedStorage.removeItem('app-password')
-            setPasswordIsSet(false)
-        } catch (error) {
-            console.error(error)
-            alert('An error occurred while removing password')
         }
     }
 
@@ -244,8 +232,69 @@ const Gallery = () => {
         return returnValue;
     }
 
+    function startSearching() {
+        if (!endDate || !startDate) return alert('Please enter a start and an end date')
+        setSearchActive(true)
+        setSearchOpen(false)
+        setSearching(true);
+        previousStartDate.current = startDate;
+        previousEndDate.current = endDate;
+    }
+
+    function cancelSearch(resetDate) {
+        setSearchOpen(false)
+
+        if (startDate !== previousStartDate.current) {
+            setStartDate(previousStartDate.current)
+        }
+
+        if (endDate !== previousEndDate.current) {
+            setEndDate(previousEndDate.current)
+        }
+
+        if (resetDate) {
+            setStartDate(null)
+            setEndDate(null)
+            setSearchActive(false)
+            setSearching(true)
+        }
+    }
+
     return (
         <>
+            <DatePicker
+                modal
+                open={startDateSelectorOpen}
+                date={startDate === null ? new Date() : startDate}
+                onConfirm={(date) => {
+                    setStartDateSelectorOpen(false)
+                    date.setHours(0)
+                    date.setMinutes(0)
+                    date.setSeconds(0, 0)
+                    setStartDate(date)
+                }}
+                onCancel={() => {
+                    setStartDateSelectorOpen(false)
+                }}
+                mode="date"
+            />
+            <DatePicker
+                modal
+                open={endDateSelectorOpen}
+                date={endDate === null ? new Date() : endDate}
+                onConfirm={(date) => {
+                    setEndDateSelectorOpen(false)
+                    date.setHours(23)
+                    date.setMinutes(59)
+                    date.setSeconds(59, 999)
+                    setEndDate(date)
+                }}
+                onCancel={() => {
+                    setEndDateSelectorOpen(false)
+                }}
+                mode="date"
+            />
+
             {
                 passwordIsSet !== null && photos !== null && locked !== null ?
                     locked ?
@@ -255,56 +304,58 @@ const Gallery = () => {
                                 <Text style={{fontSize: 30, fontWeight: 'bold', color: colors.text}}>Gallery is locked</Text>
                                 <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Enter Password' placeholderTextColor={colors.text} value={passwordText} onChangeText={setPasswordText} secureTextEntry/>
                                 <Text style={{color: 'red', fontSize: 15, textAlign: 'center'}}>{unlockingError || ' '}</Text>
-                                <TouchableOpacity onPress={unlockGallery} style={{borderWidth: 1, borderColor: colors.text, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10}}>
-                                    <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text}}>Unlock</Text>
-                                </TouchableOpacity>
+                                <Button onPress={unlockGallery} text="Unlock"/>
                             </View>
                         </TouchableWithoutFeedback>
-                    : creatingPassword ?
-                        processingPasswordGeneration ?
-                            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                                <ActivityIndicator color={colors.text} size="large"/>
-                            </View>
-                        :
-                            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                                    <Text style={{fontSize: 20, color: colors.text}}>Create a Password</Text>
-                                    <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Enter a Password' placeholderTextColor={colors.text} value={enterPassword} onChangeText={changeEnterPassword} secureTextEntry/>
-                                    <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Confirm Password' placeholderTextColor={colors.text} value={confirmPassword} onChangeText={changeConfirmPassword} secureTextEntry/>
-                                    <Text style={{color: 'red', fontSize: 15, textAlign: 'center'}}>{createPasswordError || ' '}</Text>
-                                    <TouchableOpacity onPress={() => setCreatingPassword(false)} style={{borderWidth: 1, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10, borderColor: colors.text}}>
-                                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text}}>Cancel</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={setPassword} style={{borderWidth: 1, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, marginTop: 10, borderColor: colors.text}}>
-                                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.text}}>Save Password</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </TouchableWithoutFeedback>
-                    : photos.length ?
-                        <SafeAreaView style={{flex: 1}}>
-                            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10}}>
-                                <View style={{flexDirection: 'row'}}>
-                                    <Circle width={14} color={passwordIsSet ? 'green' : 'red'} style={{marginLeft: 10}}/>
-                                    <Text style={{fontSize: 14, marginLeft: 5, color: colors.text}}>Password: {passwordIsSet ? 'ON' : 'OFF'}</Text>
+                    : searchOpen ?
+                        <SafeAreaView style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', width: '100%', marginBottom: 30}}>
+                                <View>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>Start Date</Text>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{startDate === null ? 'Not Set' : getDateString(startDate)}</Text>
+                                    <Button onPress={() => setStartDateSelectorOpen(true)} text={startDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
                                 </View>
                                 <View>
-                                    {passwordIsSet ?
-                                        <TouchableOpacity onPress={removePassword}>
-                                            <Text style={{fontSize: 14, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Remove Password</Text>
-                                        </TouchableOpacity>
-                                    :
-                                        <TouchableOpacity onPress={() => setCreatingPassword(true)}>
-                                            <Text style={{fontSize: 14, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginRight: 10}}>Turn on password</Text>
-                                        </TouchableOpacity>
-                                    }
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>End Date</Text>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{endDate === null ? 'Not Set' : getDateString(endDate)}</Text>
+                                    <Button onPress={() => setEndDateSelectorOpen(true)} text={endDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
                                 </View>
                             </View>
-                            {passwordIsSet && (
-                                <TouchableOpacity onPress={lockGallery} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10}}>
-                                    <Fontisto name="locked" size={20} color={colors.link}/>
-                                    <Text style={{fontSize: 16, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginLeft: 10}}>Lock Gallery</Text>
+                            <Text style={{fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>Days to search: {!startDate || !endDate ? 0 : Math.floor((endDate / 1000 / 60 / 60 / 24) - (startDate / 1000 / 60 / 60 / 24))}</Text>
+                            <Button onPress={() => cancelSearch()} text="Cancel"/>
+                            <Button style={!endDate || !startDate ? {opacity: 0.7} : {opacity: 1}} onPress={startSearching} text="Search"/>
+                        </SafeAreaView>
+                    : searching ?
+                        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <ActivityIndicator size="large" color={colors.text}/>
+                        </View>
+                    : photos.length ?
+                        <SafeAreaView style={{flex: 1}}>
+                            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                                <TouchableOpacity style={{paddingHorizontal: 10}} disabled={true}>
+                                    {/*FUNCTIONALITY COMING SOON! TOUCHABLEOPACITY IS MEANT TO BE DISABLED!*/}
+                                    <Octicons name="video" size={30} color={colors.background}/>
                                 </TouchableOpacity>
-                            )}
+                                {passwordIsSet ? (
+                                    <TouchableOpacity onPress={lockGallery} style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10, alignSelf: 'center'}}>
+                                        <Fontisto name="locked" size={20} color={colors.link}/>
+                                        <Text style={{fontSize: 16, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginLeft: 10}}>Lock Gallery</Text>
+                                    </TouchableOpacity>
+                                ) : <View/>}
+                                <TouchableOpacity onPress={() => setSearchOpen(true)} style={{paddingHorizontal: 10}}>
+                                    <Fontisto name="search" size={30} color={colors.text}/>
+                                </TouchableOpacity>
+                            </View>
+                            {
+                                searchActive && (
+                                    <>
+                                        <Text style={{fontSize: 14, textAlign: 'center', color: colors.text}}>Active Search: {getDateString(startDate)} - {getDateString(endDate)}</Text>
+                                        <TouchableOpacity style={{paddingBottom: 5}} onPress={() => cancelSearch(true)}>
+                                            <Text style={{fontSize: 16, color: colors.link, textAlign: 'center'}}>Clear Search</Text>
+                                        </TouchableOpacity>
+                                    </>
+                                )
+                            }
                             <FlatList
                                 data={photos}
                                 keyExtractor={(item) => item.key || item}
@@ -312,16 +363,18 @@ const Gallery = () => {
                                 numColumns={2}
                                 ListHeaderComponent={
                                     <>
-                                        <View style={{width: '100%', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-                                            <Text style={{color: colors.text}}>🔥 Your streak is: {streak}</Text>
-                                            {streakWarning ? 
-                                                <Text style={{color: 'red'}}>Take a photo today to avoid losing your streak</Text>
-                                            : photoTakenToday ?
-                                                <Text style={{color: colors.text}}>You've added to your streak for today</Text>
-                                            :
-                                                <Text style={{color: colors.text}}>Take a photo everyday to build up your streak!</Text>
-                                            }
-                                        </View>
+                                        {!searchActive && (
+                                            <View style={{width: '100%', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+                                                <Text style={{color: colors.text}}>🔥 Your streak is: {streak}</Text>
+                                                {streakWarning ? 
+                                                    <Text style={{color: 'red'}}>Take a photo today to avoid losing your streak</Text>
+                                                : photoTakenToday ?
+                                                    <Text style={{color: colors.text}}>You've added to your streak for today</Text>
+                                                :
+                                                    <Text style={{color: colors.text}}>Take a photo everyday to build up your streak!</Text>
+                                                }
+                                            </View>
+                                        )}
                                     </>
                                 }
                             />
@@ -334,24 +387,16 @@ const Gallery = () => {
                                 <Circle width={15} color={passwordIsSet ? 'green' : 'red'}/>
                                 <Text style={{fontSize: 15, color: colors.text}}>{passwordIsSet ? 'Your gallery is protected with a password' : "Your gallery doesn't have a password set"}</Text>
                             </View>
-                            <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', marginTop: 20}}>
-                                {passwordIsSet ?
-                                    <>
-                                        <TouchableOpacity onPress={lockGallery}>
-                                            <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Lock Gallery</Text>
+                            {
+                                !passwordIsSet && (
+                                    <View style={{flexDirection: 'row', marginTop: 30}}>
+                                        <Text style={{fontSize: 16, color: colors.text}}>You can set a password for your gallery in </Text>
+                                        <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+                                            <Text style={{fontSize: 16, color: colors.link}}>Settings</Text>
                                         </TouchableOpacity>
-                                    </>
-                                :
-                                    <TouchableOpacity onPress={() => setCreatingPassword(true)}>
-                                        <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link}}>Turn on password</Text>
-                                    </TouchableOpacity>
-                                }
-                            </View>
-                            {passwordIsSet && (
-                                <TouchableOpacity onPress={removePassword}>
-                                    <Text style={{fontSize: 20, color: colors.link, textDecorationStyle: 'solid', textDecorationColor: colors.link, marginTop: 25}}>Remove Password</Text>
-                                </TouchableOpacity>
-                            )}
+                                    </View>
+                                )
+                            }
                         </View>
                 :
                     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
