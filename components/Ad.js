@@ -46,7 +46,7 @@ class AppBannerAdClass extends Component {
 function Ad() {
     const {adId} = useContext(AdIdContext);
 
-    return <AppBannerAdClass colors={colors} adId={adId}/>
+    return <AppBannerAdClass adId={adId}/>
 }
 
 export default Ad;
