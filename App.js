@@ -10,6 +10,7 @@ import { AdIdContext } from './context/AdIdContext';
 import { StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppStylingContext } from './context/AppStylingContext';
+import ErrorBoundary from './components/ErrorBoundary.js';
 
 const EditedLightTheme = {
     ...DefaultTheme,
@@ -73,17 +74,19 @@ const App = () => {
     const theme = appStylingContextState === 'Default' ? colorScheme === 'dark' ? EditedDarkTheme : EditedLightTheme : appStylingContextState === 'Dark' ? EditedDarkTheme : EditedLightTheme
 
     return (
-        <AdIdContext.Provider value={{adId, setAdId}}>
-            <AppStylingContext.Provider value={{appStylingContextState, setAppStylingContextState}}>
-                <NavigationContainer theme={theme}>
-                    <StatusBar
-                        animated={true}
-                        barStyle={theme.dark ? 'light-content' : 'dark-content'}
-                    />
-                    <Tabs/>
-                </NavigationContainer>
-            </AppStylingContext.Provider>
-        </AdIdContext.Provider>
+        <ErrorBoundary>
+            <AdIdContext.Provider value={{adId, setAdId}}>
+                <AppStylingContext.Provider value={{appStylingContextState, setAppStylingContextState}}>
+                    <NavigationContainer theme={theme}>
+                        <StatusBar
+                            animated={true}
+                            barStyle={theme.dark ? 'light-content' : 'dark-content'}
+                        />
+                        <Tabs/>
+                    </NavigationContainer>
+                </AppStylingContext.Provider>
+            </AdIdContext.Provider>
+        </ErrorBoundary>
     )
 }
 
