@@ -30,7 +30,7 @@ const EditedDarkTheme = {
 
 const App = () => {
     const colorScheme = useColorScheme()
-    const productionAdId = Platform.OS === 'ios' ? appConfig.ios_ad_id : appConfig.android_ad_id
+    const productionAdId = Platform.OS === 'ios' ? IOSADID : ANDROIDADID
     const [adId, setAdId] = useState(__DEV__ || DeviceInfo.isEmulatorSync() ? TestIds.BANNER : productionAdId)
     const [appStylingContextState, setAppStylingContextState] = useState(null)
 
