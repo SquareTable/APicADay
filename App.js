@@ -5,7 +5,7 @@ import { useColorScheme, Platform } from 'react-native'
 import mobileAds, { MaxAdContentRating, TestIds } from 'react-native-google-mobile-ads';
 import { useEffect, useState } from 'react';
 import DeviceInfo from 'react-native-device-info'
-const appConfig = require('./config.json');
+import {IOSADID, ANDROIDADID} from '@dotenv'
 import { AdIdContext } from './context/AdIdContext';
 import { StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
