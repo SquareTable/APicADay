@@ -26,19 +26,21 @@ class AppBannerAdClass extends Component {
         )
 
         return (
-            <BannerAd
-                unitId={this.props.adId}
-                size={BannerAdSize.MEDIUM_RECTANGLE}
-                requestOptions={{
-                    requestNonPersonalizedAdsOnly: true,
-                }}
-                onAdFailedToLoad={(error) => {
-                    console.warn('An error occurred while loading ad:', error)
-                    this.setState({
-                        error: true
-                    })
-                }}
-            />
+            <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+                <BannerAd
+                    unitId={this.props.adId}
+                    size={BannerAdSize.MEDIUM_RECTANGLE}
+                    requestOptions={{
+                        requestNonPersonalizedAdsOnly: true,
+                    }}
+                    onAdFailedToLoad={(error) => {
+                        console.warn('An error occurred while loading ad:', error)
+                        this.setState({
+                            error: true
+                        })
+                    }}
+                />
+            </View>
         )
     }
 }
