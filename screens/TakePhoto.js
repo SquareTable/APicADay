@@ -142,13 +142,13 @@ const TakePhoto = () => {
                             <>
                                 <View style={{position: 'absolute', zIndex: 2, top: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', height: '100%', width: '100%', paddingBottom: 20}}>
                                     {frontAndBackEnabled && (
-                                        <TouchableOpacity onPress={changeCamera} style={[{position: 'absolute', left: 10, bottom: 20}, styles.dropShadow]}>
-                                            <Ionicons name="camera-reverse-sharp" size={70} color="white"/>
+                                        <TouchableOpacity onPress={changeCamera} style={{position: 'absolute', left: 10, bottom: 20}}>
+                                            <Ionicons name="camera-reverse-sharp" size={70} color="white" style={styles.dropShadow}/>
                                         </TouchableOpacity>
                                     )}
                                     {device.hasFlash && (
-                                        <TouchableOpacity onPress={() => setFlashOn(flashOn => !flashOn)} style={[{position: 'absolute', right: 10, bottom: 20}, styles.dropShadow]}>
-                                            <Ionicons name={flashOn ? 'flash' : 'flash-off'} size={70} color="white"/>
+                                        <TouchableOpacity onPress={() => setFlashOn(flashOn => !flashOn)} style={{position: 'absolute', right: 10, bottom: 20}}>
+                                            <Ionicons name={flashOn ? 'flash' : 'flash-off'} size={70} color="white" style={styles.dropShadow}/>
                                         </TouchableOpacity>
                                     )}
                                     <TouchableOpacity onPress={takePhoto} style={[{backgroundColor: 'black', width: 70, height: 70, borderColor: 'white', borderWidth: 2, borderRadius: 1000}, styles.dropShadow]}></TouchableOpacity>
