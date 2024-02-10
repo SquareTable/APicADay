@@ -139,6 +139,14 @@ const TakePhoto = () => {
                             <ActivityIndicator size="large" color={colors.text}/>
                         :
                             <>
+                                <View style={{position: 'absolute', zIndex: 2, top: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', height: '100%', width: '100%', paddingBottom: 20}}>
+                                    {frontAndBackEnabled && (
+                                        <TouchableOpacity onPress={changeCamera} style={{position: 'absolute', left: 10, bottom: 20}}>
+                                            <Ionicons name="camera-reverse-sharp" size={70} color="white"/>
+                                        </TouchableOpacity>
+                                    )}
+                                    <TouchableOpacity onPress={takePhoto} style={{backgroundColor: 'black', width: 70, height: 70, borderColor: 'white', borderWidth: 2, borderRadius: 1000}}></TouchableOpacity>
+                                </View>
                                 <Camera
                                     style={{height: '100%', width: '100%'}}
                                     device={device}
@@ -146,12 +154,6 @@ const TakePhoto = () => {
                                     photo={true}
                                     ref={camera}
                                 />
-                                <TouchableOpacity onPress={takePhoto} style={{position: 'absolute', zIndex: 2, backgroundColor: 'black', width: 70, height: 70, borderColor: 'white', borderWidth: 2, borderRadius: 1000, top: '90%'}}></TouchableOpacity>
-                                {frontAndBackEnabled && (
-                                    <TouchableOpacity onPress={changeCamera} style={{position: 'absolute', zIndex: 2, top: '90%', left: 20}}>
-                                        <Ionicons name="camera-reverse-sharp" size={70} color="white"/>
-                                    </TouchableOpacity>
-                                )}
                             </>
                 : cameraPermission === "not-determined" ?
                     <>
