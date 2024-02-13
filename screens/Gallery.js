@@ -282,6 +282,7 @@ const Gallery = ({navigation}) => {
                     setStartDateSelectorOpen(false)
                 }}
                 mode="date"
+                maximumDate={new Date()}
             />
             <DatePicker
                 modal
@@ -293,7 +294,7 @@ const Gallery = ({navigation}) => {
                     if (date.getTime() > Date.now()) {
                         date = new Date();
                     }
-                    
+
                     date.setHours(23)
                     date.setMinutes(59)
                     date.setSeconds(59, 999)
@@ -303,6 +304,7 @@ const Gallery = ({navigation}) => {
                     setEndDateSelectorOpen(false)
                 }}
                 mode="date"
+                maximumDate={new Date()}
             />
 
             {
