@@ -315,7 +315,7 @@ const Gallery = ({navigation}) => {
                             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                                 <Fontisto name="locked" size={60} color={colors.text}/>
                                 <Text style={{fontSize: 30, fontWeight: 'bold', color: colors.text}}>Gallery is locked</Text>
-                                <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Enter Password' placeholderTextColor={colors.text} value={passwordText} onChangeText={setPasswordText} secureTextEntry/>
+                                <TextInput style={{borderWidth: 1, width: 200, height: 35, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Enter Password' placeholderTextColor={colors.text} value={passwordText} onChangeText={setPasswordText} secureTextEntry/>
                                 <Text style={{color: 'red', fontSize: 15, textAlign: 'center'}}>{unlockingError || ' '}</Text>
                                 <Button onPress={unlockGallery} text="Unlock"/>
                             </View>
