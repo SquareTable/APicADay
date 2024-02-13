@@ -118,7 +118,7 @@ const Gallery = ({navigation}) => {
                 getPhotos();
             }
         }
-    }, [isFocused, searchActive, startDate, endDate])
+    }, [isFocused, searchActive, startDate, endDate, searching])
 
     useEffect(() => {
         const subscription = AppState.addEventListener('change', nextAppState => {
@@ -268,6 +268,11 @@ const Gallery = ({navigation}) => {
                 date={startDate === null ? new Date() : startDate}
                 onConfirm={(date) => {
                     setStartDateSelectorOpen(false)
+
+                    if (date.getTime() > Date.now()) {
+                        date = new Date();
+                    }
+
                     date.setHours(0)
                     date.setMinutes(0)
                     date.setSeconds(0, 0)
@@ -277,6 +282,7 @@ const Gallery = ({navigation}) => {
                     setStartDateSelectorOpen(false)
                 }}
                 mode="date"
+                maximumDate={new Date()}
             />
             <DatePicker
                 modal
@@ -284,6 +290,11 @@ const Gallery = ({navigation}) => {
                 date={endDate === null ? new Date() : endDate}
                 onConfirm={(date) => {
                     setEndDateSelectorOpen(false)
+                    
+                    if (date.getTime() > Date.now()) {
+                        date = new Date();
+                    }
+
                     date.setHours(23)
                     date.setMinutes(59)
                     date.setSeconds(59, 999)
@@ -293,6 +304,8 @@ const Gallery = ({navigation}) => {
                     setEndDateSelectorOpen(false)
                 }}
                 mode="date"
+                maximumDate={new Date()}
+                minimumDate={startDate === null ? new Date() : startDate}
             />
 
             {
@@ -302,7 +315,7 @@ const Gallery = ({navigation}) => {
                             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                                 <Fontisto name="locked" size={60} color={colors.text}/>
                                 <Text style={{fontSize: 30, fontWeight: 'bold', color: colors.text}}>Gallery is locked</Text>
-                                <TextInput style={{borderWidth: 1, width: 200, height: 30, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Enter Password' placeholderTextColor={colors.text} value={passwordText} onChangeText={setPasswordText} secureTextEntry/>
+                                <TextInput style={{borderWidth: 1, width: 200, height: 35, marginTop: 10, color: colors.text, borderColor: colors.text, paddingLeft: 5, borderRadius: 5}} placeholder='Enter Password' placeholderTextColor={colors.text} value={passwordText} onChangeText={setPasswordText} secureTextEntry/>
                                 <Text style={{color: 'red', fontSize: 15, textAlign: 'center'}}>{unlockingError || ' '}</Text>
                                 <Button onPress={unlockGallery} text="Unlock"/>
                             </View>
@@ -318,16 +331,23 @@ const Gallery = ({navigation}) => {
                                 <View>
                                     <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>End Date</Text>
                                     <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{endDate === null ? 'Not Set' : getDateString(endDate)}</Text>
-                                    <Button onPress={() => setEndDateSelectorOpen(true)} text={endDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
+                                    <Button active={!!startDate} onPress={() => startDate ? setEndDateSelectorOpen(true) : alert('Please set a start date first')} text={endDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
                                 </View>
                             </View>
                             <Text style={{fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>Days to search: {!startDate || !endDate ? 0 : Math.floor((endDate / 1000 / 60 / 60 / 24) - (startDate / 1000 / 60 / 60 / 24))}</Text>
-                            <Button onPress={() => cancelSearch()} text="Cancel"/>
-                            <Button style={!endDate || !startDate ? {opacity: 0.7} : {opacity: 1}} onPress={startSearching} text="Search"/>
+                            <Button onPress={() => cancelSearch(!searchActive)} text="Cancel"/>
+                            <Button active={!!startDate && !!endDate} onPress={startSearching} text="Search"/>
                         </SafeAreaView>
                     : searching ?
                         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <ActivityIndicator size="large" color={colors.text}/>
+                        </View>
+                    : searchActive && photos.length === 0 ?
+                        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Search for photos taken between {getDateString(startDate)} - {getDateString(endDate)} returned no photos.</Text>
+                            <TouchableOpacity style={{marginTop: 20}} onPress={() => cancelSearch(true)}>
+                                <Text style={{fontSize: 20, color: colors.link, textAlign: 'center'}}>Clear Search</Text>
+                            </TouchableOpacity>
                         </View>
                     : photos.length ?
                         <SafeAreaView style={{flex: 1}}>
