@@ -329,6 +329,13 @@ const Gallery = ({navigation}) => {
                         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <ActivityIndicator size="large" color={colors.text}/>
                         </View>
+                    : searchActive && photos.length === 0 ?
+                        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Search for photos taken between {getDateString(startDate)} - {getDateString(endDate)} returned no photos.</Text>
+                            <TouchableOpacity style={{marginTop: 20}} onPress={() => cancelSearch(true)}>
+                                <Text style={{fontSize: 20, color: colors.link, textAlign: 'center'}}>Clear Search</Text>
+                            </TouchableOpacity>
+                        </View>
                     : photos.length ?
                         <SafeAreaView style={{flex: 1}}>
                             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -349,7 +356,7 @@ const Gallery = ({navigation}) => {
                             {
                                 searchActive && (
                                     <>
-                                        <Text style={{fontSize: 14, textAlign: 'center', color: colors.text}}>Active Search: {getDateString(startDate)} - {getDateString(endDate)}</Text>
+                                        <Text style={{fontSize: 14, textAlign: 'center', color: colors.text}}>Active Search: </Text>
                                         <TouchableOpacity style={{paddingBottom: 5}} onPress={() => cancelSearch(true)}>
                                             <Text style={{fontSize: 16, color: colors.link, textAlign: 'center'}}>Clear Search</Text>
                                         </TouchableOpacity>
