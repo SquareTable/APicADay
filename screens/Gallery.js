@@ -268,6 +268,11 @@ const Gallery = ({navigation}) => {
                 date={startDate === null ? new Date() : startDate}
                 onConfirm={(date) => {
                     setStartDateSelectorOpen(false)
+
+                    if (date.getTime() > Date.now()) {
+                        date = new Date();
+                    }
+
                     date.setHours(0)
                     date.setMinutes(0)
                     date.setSeconds(0, 0)
@@ -284,6 +289,11 @@ const Gallery = ({navigation}) => {
                 date={endDate === null ? new Date() : endDate}
                 onConfirm={(date) => {
                     setEndDateSelectorOpen(false)
+                    
+                    if (date.getTime() > Date.now()) {
+                        date = new Date();
+                    }
+                    
                     date.setHours(23)
                     date.setMinutes(59)
                     date.setSeconds(59, 999)
