@@ -305,6 +305,7 @@ const Gallery = ({navigation}) => {
                 }}
                 mode="date"
                 maximumDate={new Date()}
+                minimumDate={startDate === null ? new Date() : startDate}
             />
 
             {
@@ -330,12 +331,12 @@ const Gallery = ({navigation}) => {
                                 <View>
                                     <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>End Date</Text>
                                     <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{endDate === null ? 'Not Set' : getDateString(endDate)}</Text>
-                                    <Button onPress={() => setEndDateSelectorOpen(true)} text={endDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
+                                    <Button active={!!startDate} onPress={() => startDate ? setEndDateSelectorOpen(true) : alert('Please set a start date first')} text={endDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
                                 </View>
                             </View>
                             <Text style={{fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>Days to search: {!startDate || !endDate ? 0 : Math.floor((endDate / 1000 / 60 / 60 / 24) - (startDate / 1000 / 60 / 60 / 24))}</Text>
                             <Button onPress={() => cancelSearch()} text="Cancel"/>
-                            <Button style={!endDate || !startDate ? {opacity: 0.7} : {opacity: 1}} onPress={startSearching} text="Search"/>
+                            <Button active={!!startDate && !!endDate} onPress={startSearching} text="Search"/>
                         </SafeAreaView>
                     : searching ?
                         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -368,7 +369,7 @@ const Gallery = ({navigation}) => {
                             {
                                 searchActive && (
                                     <>
-                                        <Text style={{fontSize: 14, textAlign: 'center', color: colors.text}}>Active Search: </Text>
+                                        <Text style={{fontSize: 14, textAlign: 'center', color: colors.text}}>Active Search: {getDateString(startDate)} - {getDateString(endDate)}</Text>
                                         <TouchableOpacity style={{paddingBottom: 5}} onPress={() => cancelSearch(true)}>
                                             <Text style={{fontSize: 16, color: colors.link, textAlign: 'center'}}>Clear Search</Text>
                                         </TouchableOpacity>
