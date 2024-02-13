@@ -118,7 +118,7 @@ const Gallery = ({navigation}) => {
                 getPhotos();
             }
         }
-    }, [isFocused, searchActive, startDate, endDate])
+    }, [isFocused, searchActive, startDate, endDate, searching])
 
     useEffect(() => {
         const subscription = AppState.addEventListener('change', nextAppState => {
@@ -335,7 +335,7 @@ const Gallery = ({navigation}) => {
                                 </View>
                             </View>
                             <Text style={{fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>Days to search: {!startDate || !endDate ? 0 : Math.floor((endDate / 1000 / 60 / 60 / 24) - (startDate / 1000 / 60 / 60 / 24))}</Text>
-                            <Button onPress={() => cancelSearch()} text="Cancel"/>
+                            <Button onPress={() => cancelSearch(!searchActive)} text="Cancel"/>
                             <Button active={!!startDate && !!endDate} onPress={startSearching} text="Search"/>
                         </SafeAreaView>
                     : searching ?
