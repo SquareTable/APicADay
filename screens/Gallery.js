@@ -211,7 +211,10 @@ const Gallery = ({navigation}) => {
             if (!photoTakenToday && !streakWarning) {
                 //Photo was not taken today or yesterday o streak has ended
                 try {
-                    await AsyncStorage.setItem('current-streak', '0')
+                    if (currentStreakCount !== 0) {
+                        await AsyncStorage.setItem('current-streak', '0')
+                        currentStreakCount = 0
+                    }
                 } catch (error) {
                     console.error(error)
                     returnValue = [true]
