@@ -3,6 +3,7 @@ import {Component} from 'react';
 import FontAwesomeFive from 'react-native-vector-icons/FontAwesome5';
 import ImageModal from 'react-native-image-modal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { localizeShortDate } from '../utils/DateHelper';
 
 class Photo extends Component {
     constructor(props) {
@@ -32,7 +33,7 @@ class Photo extends Component {
     render() {
         return (
             <View style={{justifyContent: 'center', alignItems: 'center', margin: 3, width: '50%'}}>
-                <Text style={{fontSize: 24, fontWeight: 'bold', color: this.props.colors.text}}>{this.date.getDate()}/{this.date.getMonth() + 1}/{this.date.getFullYear()}</Text>
+                <Text style={{fontSize: 24, fontWeight: 'bold', color: this.props.colors.text}}>{localizeShortDate(this.date)}</Text>
                 <ImageModal
                     resizeMode="contain"
                     style={{

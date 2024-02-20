@@ -22,21 +22,21 @@ const AppStyling = () => {
     }, [appStylingContextState])
 
     return (
-        <View style={{flex: 1, justifyContent: 'space-around', alignItems: 'center', flexDirection: 'row'}}>
-            <TouchableOpacity onPress={() => setAppStylingContextState('Default')} style={{justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
-                <Text style={{color: colors.text, fontSize: 20, fontWeight: 'bold'}}>Default</Text>
+        <View style={{flex: 1, alignItems: 'center', flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => setAppStylingContextState('Default')} style={{justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: `${100/3}%`}}>
+                <Text style={{color: colors.text, fontSize: 18, fontWeight: 'bold', maxWidth: '100%', textAlign: 'center'}}>System Setting</Text>
                 <MaterialCommunityIcons name="theme-light-dark" size={84} color={colors.text}/>
                 <RadioButton selected={appStylingContextState === 'Default'} colors={colors} disabled={true}/>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setAppStylingContextState('Dark')} style={{justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
-                <Text style={{color: colors.text, fontSize: 20, fontWeight: 'bold'}}>Dark</Text>
+            <TouchableOpacity onPress={() => setAppStylingContextState('Dark')} style={{justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: `${100/3}%`}}>
+                <Text style={{color: colors.text, fontSize: 18, fontWeight: 'bold', textAlign: 'center'}}>Dark</Text>
                 <Ionicons name="moon-outline" size={77} color={colors.text}/>
                 <RadioButton selected={appStylingContextState === 'Dark'} colors={colors} disabled={true}/>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setAppStylingContextState('Light')} style={{justifyContent: 'center', alignItems: 'center', flexDirection: 'column'}}>
-                <Text style={{color: colors.text, fontSize: 20, fontWeight: 'bold'}}>Light</Text>
+            <TouchableOpacity onPress={() => setAppStylingContextState('Light')} style={{justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: `${100/3}%`}}>
+                <Text style={{color: colors.text, fontSize: 18, fontWeight: 'bold', textAlign: 'center'}}>Light</Text>
                 <Feather name="sun" size={70} color={colors.text} style={{marginBottom: 10}}/>
                 <RadioButton selected={appStylingContextState === 'Light'} colors={colors} disabled={true}/>
             </TouchableOpacity>

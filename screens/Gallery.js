@@ -10,10 +10,7 @@ import Octicons from 'react-native-vector-icons/Octicons';
 import Ad from '../components/Ad';
 import Button from '../components/Button';
 import DatePicker from 'react-native-date-picker';
-
-function getDateString(date) {
-    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
-}
+import { localizeShortDate } from '../utils/DateHelper';
 
 const Gallery = ({navigation}) => {
     const [photos, setPhotos] = useState(null)
@@ -214,7 +211,10 @@ const Gallery = ({navigation}) => {
             if (!photoTakenToday && !streakWarning) {
                 //Photo was not taken today or yesterday o streak has ended
                 try {
-                    await AsyncStorage.setItem('current-streak', '0')
+                    if (currentStreakCount !== 0) {
+                        await AsyncStorage.setItem('current-streak', '0')
+                        currentStreakCount = 0
+                    }
                 } catch (error) {
                     console.error(error)
                     returnValue = [true]
@@ -325,12 +325,12 @@ const Gallery = ({navigation}) => {
                             <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', width: '100%', marginBottom: 30}}>
                                 <View>
                                     <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>Start Date</Text>
-                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{startDate === null ? 'Not Set' : getDateString(startDate)}</Text>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{startDate === null ? 'Not Set' : localizeShortDate(startDate)}</Text>
                                     <Button onPress={() => setStartDateSelectorOpen(true)} text={startDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
                                 </View>
                                 <View>
                                     <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>End Date</Text>
-                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{endDate === null ? 'Not Set' : getDateString(endDate)}</Text>
+                                    <Text style={{fontSize: 16, color: colors.text, fontWeight: 'bold', textAlign: 'center'}}>{endDate === null ? 'Not Set' : localizeShortDate(endDate)}</Text>
                                     <Button active={!!startDate} onPress={() => startDate ? setEndDateSelectorOpen(true) : alert('Please set a start date first')} text={endDate === null ? 'Set Date' : 'Change'} textStyle={{fontSize: 16}}/>
                                 </View>
                             </View>
@@ -344,7 +344,7 @@ const Gallery = ({navigation}) => {
                         </View>
                     : searchActive && photos.length === 0 ?
                         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                            <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Search for photos taken between {getDateString(startDate)} - {getDateString(endDate)} returned no photos.</Text>
+                            <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Search for photos taken between {localizeShortDate(startDate)} - {localizeShortDate(endDate)} returned no photos.</Text>
                             <TouchableOpacity style={{marginTop: 20}} onPress={() => cancelSearch(true)}>
                                 <Text style={{fontSize: 20, color: colors.link, textAlign: 'center'}}>Clear Search</Text>
                             </TouchableOpacity>
@@ -369,7 +369,7 @@ const Gallery = ({navigation}) => {
                             {
                                 searchActive && (
                                     <>
-                                        <Text style={{fontSize: 14, textAlign: 'center', color: colors.text}}>Active Search: {getDateString(startDate)} - {getDateString(endDate)}</Text>
+                                        <Text style={{fontSize: 14, textAlign: 'center', color: colors.text}}>Active Search: {localizeShortDate(startDate)} - {localizeShortDate(endDate)}</Text>
                                         <TouchableOpacity style={{paddingBottom: 5}} onPress={() => cancelSearch(true)}>
                                             <Text style={{fontSize: 16, color: colors.link, textAlign: 'center'}}>Clear Search</Text>
                                         </TouchableOpacity>
