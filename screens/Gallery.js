@@ -35,15 +35,14 @@ const Gallery = ({navigation}) => {
 
     async function getPhotos() {
         let keys = await AsyncStorage.getAllKeys()
-        keys = keys.filter((key) => key.slice(0, 6) === 'IMAGE-').map(item => item.substring(6))
+        keys = keys.filter((key) => key.slice(0, 6) === 'IMAGE-').map(item => parseInt(item.substring(6)))
 
         if (searchActive) {
             const startMilliseconds = startDate.getTime();
             const endMilliseconds = endDate.getTime();
 
             keys = keys.filter(key => {
-                const intKey = parseInt(key);
-                return startMilliseconds <= intKey && intKey <= endMilliseconds
+                return startMilliseconds <= key && key <= endMilliseconds
             })
         }
 
@@ -53,7 +52,7 @@ const Gallery = ({navigation}) => {
 
         const adsToShow = originalLength < postsPerAd + 1 ? 0 : Math.floor((originalLength - (postsPerAd + 1)) / postsPerAd + 1)
 
-        keys.sort((a, b) => parseInt(b) - parseInt(a))
+        keys.sort((a, b) => b - a)
 
         for (let i = 0; i < adsToShow; i++) {
             //The first ad will be placed after the first 4 ads
@@ -192,44 +191,62 @@ const Gallery = ({navigation}) => {
         }
     }
 
+    function getDaysSinceUnixEpoch(ms) {
+        return Math.floor(ms / (1000 * 60 * 60 * 24))
+    }
+
+    function daysDifference(dateMsOne, dateMsTwo) {
+        return getDaysSinceUnixEpoch(dateMsOne) - getDaysSinceUnixEpoch(dateMsTwo)
+    }
+
     const calculateStreak = async () => {
-        let returnValue;
+        //The streak incorrectly includes future dates, but since the user should not have their clock set to the future and change it back to the present, this bug will be ignored.
+        //This could easily be resolved in the future but would require extra compute. I would rather use less compute and include future dates than check for future dates.
+        
+        let streak = 0;
+        let keys;
 
-        await Promise.all([
-            AsyncStorage.getItem('current-streak'),
-            AsyncStorage.getItem('previous-streak-date-ms')
-        ]).then(async ([currentStreak, previousStreakTime]) => {
-            let currentStreakCount = currentStreak ? parseInt(currentStreak) : 0
-            const previousStreakDateObject = new Date(parseInt(previousStreakTime))
+        try {
+            keys = await AsyncStorage.getAllKeys()
+        } catch (error) {
+            console.error(error)
+            return [true]
+        }
 
-            const currentDate = new Date();
-            const yesterdayDate = new Date(currentDate.getTime() - 1000 * 60 * 60 * 24)
+        keys = keys.filter((key) => key.slice(0, 6) === 'IMAGE-');
 
-            const photoTakenToday = currentDate.getDate() === previousStreakDateObject.getDate() && currentDate.getMonth() === previousStreakDateObject.getMonth() && currentDate.getFullYear() === previousStreakDateObject.getFullYear()
-            const streakWarning = yesterdayDate.getDate() === previousStreakDateObject.getDate() && yesterdayDate.getMonth() === previousStreakDateObject.getMonth() && yesterdayDate.getFullYear() === previousStreakDateObject.getFullYear()
+        if (keys.length === 0) {
+            return [false, 0, false, false]
+        }
 
-            if (!photoTakenToday && !streakWarning) {
-                //Photo was not taken today or yesterday o streak has ended
-                try {
-                    if (currentStreakCount !== 0) {
-                        await AsyncStorage.setItem('current-streak', '0')
-                        currentStreakCount = 0
-                    }
-                } catch (error) {
-                    console.error(error)
-                    returnValue = [true]
-                }
 
-                returnValue = [false, 0, false, false]
+        keys = keys.map(item => parseInt(item.substring(6))).sort((a, b) => b - a);
+
+        const dayDifferenceFromFirstPhoto = daysDifference(Date.now(), keys[0])
+        const photoTakenToday = dayDifferenceFromFirstPhoto === 0;
+        const streakWarning = dayDifferenceFromFirstPhoto === 1;
+
+        if (keys.length === 1) {
+            const difference = daysDifference(Date.now(), keys[0]);
+            const streak = difference === 0 || difference === 1 ? 1 : 0
+            return [false, streak, streakWarning, photoTakenToday]
+        }
+
+        if (dayDifferenceFromFirstPhoto > 1) return [false, 0, false, false]
+
+        streak++
+
+        for (let i = 0; i < keys.length - 1; i++) {
+            const dates = keys.slice(i, i + 2);
+            if (daysDifference(...dates) === 1) {
+                streak++
+                continue
             }
 
-            returnValue = [false, currentStreakCount, streakWarning, photoTakenToday]
-        }).catch(error => {
-            console.error(error)
-            returnValue = [true]
-        })
+            break
+        }
 
-        return returnValue;
+        return [false, streak, streakWarning, photoTakenToday]
     }
 
     function startSearching() {

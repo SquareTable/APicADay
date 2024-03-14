@@ -1,0 +1,3 @@
+Changes to Async Storage data structure:
+v1.3:
+No longer using keys 'current-streak' and 'previous-streak-date-ms' -- Still stored though. HAS NOT BEEN DELETED.
