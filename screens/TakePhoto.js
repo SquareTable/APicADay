@@ -96,21 +96,6 @@ const TakePhoto = () => {
                 console.log('File deleted');
                 setTakenPhotoToday(true)
                 setPhotoJustTaken(true)
-                AsyncStorage.getItem('current-streak').then(streak => {
-                    let streakNumber = parseInt(streak);
-                    Promise.all([
-                        AsyncStorage.setItem('current-streak', isNaN(streakNumber) ? '1' : String(++streakNumber)),
-                        AsyncStorage.setItem('previous-streak-date-ms', String(Date.now()))
-                    ]).then(() => {
-                        console.log('Streak successfully incremented')
-                    }).catch(error => {
-                        console.error(error)
-                        alert('An error occurred while incrementing streak')
-                    })
-                }).catch(error => {
-                    console.error(error)
-                    alert('An error occurred while getting current streak')
-                })
             })
             .catch((err) => {
                 console.error(err.message);

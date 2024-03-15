@@ -130,37 +130,6 @@ const Gallery = ({navigation}) => {
     }, [passwordIsSet]);
 
     const deleteImage = async (dateCreated) => {
-        const dateCreatedDateObject = new Date(parseInt(dateCreated))
-        const currentDate = new Date();
-
-        if (currentDate.getDate() === dateCreatedDateObject.getDate() && currentDate.getMonth() === dateCreatedDateObject.getMonth() && currentDate.getFullYear() === dateCreatedDateObject.getFullYear()) {
-            //Photo was taken today so take away one from the streak
-            let streakCount;
-            try {
-                const streak = parseInt(await AsyncStorage.getItem('current-streak'))
-                if (isNaN(streak)) {
-                    streakCount = 0
-                } else {
-                    streakCount = streak - 1
-                }
-            } catch (error) {
-                console.error(error)
-                alert('An error occurred while deleting item.')
-            }
-
-            try {
-                await AsyncStorage.setItem('current-streak', String(streakCount))
-            } catch (error) {
-                console.error(error)
-                alert('An error occurred while deleting photo.')
-            }
-        }
-
-        if (photos.length === 1) {
-            //The user is deleting the last image, so remove the streak
-            await AsyncStorage.removeItem('current-streak')
-        }
-
         AsyncStorage.removeItem('IMAGE-' + dateCreated).then(() => {
             getPhotos()
         }).catch(error => {
@@ -202,7 +171,7 @@ const Gallery = ({navigation}) => {
     const calculateStreak = async () => {
         //The streak incorrectly includes future dates, but since the user should not have their clock set to the future and change it back to the present, this bug will be ignored.
         //This could easily be resolved in the future but would require extra compute. I would rather use less compute and include future dates than check for future dates.
-        
+
         let streak = 0;
         let keys;
 
