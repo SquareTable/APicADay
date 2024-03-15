@@ -82,21 +82,20 @@ const NotificationsSettings = () => {
             try {
                 await notifee.cancelTriggerNotifications()
             } catch (error) {
-                reject(error)
+                return reject(error)
             }
 
             try {
                 await AsyncStorage.setItem('daily-notification-time', timeString)
             } catch (error) {
-                alert('An error occurred while saving notification preferences:' + error)
-                console.error(error)
+                return reject(error)
             }
             
             if (notificationsEnabled) {
                 try {
                     await notifee.createTriggerNotification(notification, trigger);
                 } catch (error) {
-                    reject(error)
+                    return reject(error)
                 }
             }
 
