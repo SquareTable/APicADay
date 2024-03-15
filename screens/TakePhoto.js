@@ -19,7 +19,8 @@ const TakePhoto = () => {
     const [chosenCamera, setChosenCamera] = useState('back')
     const { colors } = useTheme()
     const frontAndBackEnabled = frontDevice && backDevice ? true : false;
-    const device = frontAndBackEnabled ? chosenCamera === 'front' ? frontDevice : backDevice : frontDevice || backDevice
+    const device = frontAndBackEnabled ? chosenCamera === 'front' ? frontDevice : backDevice : frontDevice || backDevice;
+    const [photoJustTaken, setPhotoJustTaken] = useState(false);
 
     const setupTakePhotoScreen = async () => {
         const status = await Camera.getCameraPermissionStatus()
@@ -50,6 +51,7 @@ const TakePhoto = () => {
             })
 
             setTakenPhotoToday(index !== -1)
+            setPhotoJustTaken(false)
         }
         setCameraPermission(status)
     }
@@ -93,6 +95,7 @@ const TakePhoto = () => {
             .then(() => {
                 console.log('File deleted');
                 setTakenPhotoToday(true)
+                setPhotoJustTaken(true)
                 AsyncStorage.getItem('current-streak').then(streak => {
                     let streakNumber = parseInt(streak);
                     Promise.all([
@@ -108,7 +111,6 @@ const TakePhoto = () => {
                     console.error(error)
                     alert('An error occurred while getting current streak')
                 })
-                setTakenPhotoToday(true)
             })
             .catch((err) => {
                 console.error(err.message);
@@ -133,6 +135,8 @@ const TakePhoto = () => {
                 : cameraPermission === "granted" ?
                     !frontDevice && !backDevice ?
                         <Text style={{fontSize: 24, textAlign: 'center', fontWeight: 'bold', marginHorizontal: 10, color: colors.text}}>Could not find a camera device to use.</Text>
+                    : photoJustTaken ?
+                        <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>Your photo has been successfully saved. Come back tomorrow to take another one!</Text>
                     : takenPhotoToday ?
                         <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>You have already taken a photo today. Please come back tomorrow.</Text>
                     :
