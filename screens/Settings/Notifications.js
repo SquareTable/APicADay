@@ -11,7 +11,7 @@ const NotificationsSettings = () => {
     const [notificationsEnabled, setNotificationsEnabled] = useState(null)
     const theme = useTheme();
     const {colors, dark} = theme;
-    const [date, setDate] = useState(new Date())
+    const [date, setDate] = useState(new Date(Date.now() + 1000 * 5 * 60)) //Current time + 5 minutes - Done so if this is the first time the user is enabling notifications, they will not get an immediate one
     const [notificationTimeString, setNotificationTimeString] = useState(null)
 
     useEffect(() => {
@@ -26,7 +26,7 @@ const NotificationsSettings = () => {
                     const date = new Date();
                     const splitValue = value.split(':')
 
-                    const addHours = value.slice(5) === 'PM' ? 12 : 0;
+                    const addHours = value.includes('PM') ? 12 : 0;
 
                     date.setHours(parseInt(splitValue[0]) + addHours)
                     date.setMinutes(parseInt(splitValue[1]))
@@ -48,7 +48,7 @@ const NotificationsSettings = () => {
         checkNotificationTime();
     }, [])
 
-    function calculateNotificationTimeString() {
+    function calculateNotificationTimeString(enablingNotifications) {
         let hours = date.getHours();
         const minutes = date.getMinutes();
 
@@ -91,20 +91,21 @@ const NotificationsSettings = () => {
                 return reject(error)
             }
             
-            if (notificationsEnabled) {
+            if (notificationsEnabled || enablingNotifications) {
                 try {
                     await notifee.createTriggerNotification(notification, trigger);
+                    alert('Created trigger notification')
                 } catch (error) {
                     return reject(error)
                 }
             }
 
-            resolve(`${hours}:${minutes < 10 ? ('0' + minutes) : minutes}${PM ? 'PM' : 'AM'}`)
+            resolve(timeString)
         })
     }
 
     useEffect(() => {
-        calculateNotificationTimeString().then(string => {
+        calculateNotificationTimeString(false).then(string => {
             setNotificationTimeString(string)
         }).catch(error => {
             console.error(error)
@@ -114,14 +115,9 @@ const NotificationsSettings = () => {
 
     const changeNotificationsEnabled = (value) => {
         if (value) {
-            calculateNotificationTimeString().then(string => {
-                AsyncStorage.setItem('daily-notification-time', string).then(() => {
-                    setNotificationTimeString(string)
-                    setNotificationsEnabled(true)
-                }).catch(error => {
-                    console.error(error)
-                    alert('An error occurred:' + error)
-                })
+            calculateNotificationTimeString(true).then(string => {
+                setNotificationTimeString(string)
+                setNotificationsEnabled(true)
             }).catch(error => {
                 console.error(error)
                 alert('An error occurred while turning on notifications:' + error)
