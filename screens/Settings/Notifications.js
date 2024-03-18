@@ -94,7 +94,6 @@ const NotificationsSettings = () => {
             if (notificationsEnabled || enablingNotifications) {
                 try {
                     await notifee.createTriggerNotification(notification, trigger);
-                    alert('Created trigger notification')
                 } catch (error) {
                     return reject(error)
                 }
