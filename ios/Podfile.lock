@@ -499,10 +499,10 @@ PODS:
     - Google-Mobile-Ads-SDK (= 10.5.0)
     - GoogleUserMessagingPlatform (= 2.0.1)
     - React-Core
-  - RNNotifee (7.7.1):
+  - RNNotifee (7.8.2):
     - React-Core
-    - RNNotifee/NotifeeCore (= 7.7.1)
-  - RNNotifee/NotifeeCore (7.7.1):
+    - RNNotifee/NotifeeCore (= 7.8.2)
+  - RNNotifee/NotifeeCore (7.8.2):
     - React-Core
   - RNReanimated (3.6.1):
     - RCT-Folly (= 2021.07.22.00)
@@ -799,7 +799,7 @@ SPEC CHECKSUMS:
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 42ec7c28dd02d540ed6c9159c57a98ff016492dc
   RNGoogleMobileAds: 10d104d0c086f0b189a03390b210a38c3806b70d
-  RNNotifee: 05692d7bb42b6c718a3906aeb8431c48ff2e8097
+  RNNotifee: 8e2d3df3f0e9ce8f5d1fe4c967431138190b6175
   RNReanimated: dc83bf2068bbc91572938337c5b2030641de1415
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
