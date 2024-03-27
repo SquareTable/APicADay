@@ -152,9 +152,9 @@ const TakePhoto = () => {
                             </>
                 : cameraPermission === "not-determined" ?
                     <>
-                        <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>APicADay needs access to your camera to function.</Text>
+                        <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>To start taking photos, press the "Continue" button to allow camera usage.</Text>
                         <TouchableOpacity onPress={allowCameraAccess} style={{paddingHorizontal: 20, paddingVertical: 10, borderColor: colors.text, borderWidth: 2, borderRadius: 10}}>
-                            <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>Allow Camera Usage</Text>
+                            <Text style={{fontSize: 30, textAlign: 'center', color: colors.text}}>Continue</Text>
                         </TouchableOpacity>
                     </>
                 : cameraPermission === "denied" ?
