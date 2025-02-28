@@ -21,11 +21,7 @@ class AppBannerAdClass extends Component {
     }
 
     render() {
-        if (this.state.error) return (
-            <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
-              <View style={{height: 250, width: 300, borderColor: 'red', borderWidth: 1, borderStyle: 'dashed', marginVertical: 10}}/>
-            </View>
-        )
+        if (this.state.error) return null
 
         return (
             <View style={{width: '100%', justifyContent: 'center', alignItems: 'center'}}>
